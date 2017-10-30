@@ -38,6 +38,18 @@
 struct tab	*tablist;
 int		tabstop = 8;
 
+static void *
+scalloc(size_t nmemb, size_t size)
+{
+	void	*vp;
+
+	if ((vp = calloc(nmemb, size)) == NULL) {
+		write(2, "no memory\n", 10);
+		_exit(077);
+	}
+	return vp;
+}
+
 void
 settab(const char *s)
 {
@@ -88,16 +100,4 @@ badts(void)
 {
 	fprintf(stderr, "Bad tab stop spec\n");
 	exit(2);
-}
-
-static void *
-scalloc(size_t nmemb, size_t size)
-{
-	void	*vp;
-
-	if ((vp = calloc(nmemb, size)) == NULL) {
-		write(2, "no memory\n", 10);
-		_exit(077);
-	}
-	return vp;
 }

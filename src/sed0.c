@@ -126,6 +126,12 @@ static char	*null;
 			op = &(buf)[opos]; \
 	}
 
+static void *
+smalloc(size_t nbytes)
+{
+	return srealloc(NULL, nbytes);
+}
+
 int
 main(int argc, char **argv)
 {
@@ -1005,12 +1011,6 @@ srealloc(void *vp, size_t nbytes)
 	if ((p = realloc(vp, nbytes)) == NULL)
 		fatal(TMMES, linebuf);
 	return p;
-}
-
-static void *
-smalloc(size_t nbytes)
-{
-	return srealloc(NULL, nbytes);
 }
 
 static void *

@@ -17,6 +17,7 @@ PATHS = -DSUSBIN='"$(SUSBIN)"' -DSU3BIN='"$(SU3BIN)"' -DDEFBIN='"$(DEFBIN)"'\
 STDS  = -DUCB -DSUS
 
 CPPFLAGS += -D_GNU_SOURCE $(DEFS) $(PATHS) $(STDS)
+LDLIBS = -lcurses -lterminfo
 
 ## DEFAULT
 AR     = ar
@@ -25,6 +26,6 @@ RANLIB = ranlib
 
 CPPFLAGS += -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_FILE_OFFSET_BITS=64
 CFLAGS   += -std=c99 -Wall -pedantic
-LDFLAGS  += -Os -static
+LDFLAGS  += -Os
 
 PREFIX = /usr/local

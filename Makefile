@@ -42,7 +42,7 @@ HDR=\
 	inc/wctype.h
 
 # SOURCE
-# diff diffh main(from where?) more newform tabs
+# diff diffh main(from where?) newform tabs
 BIN=\
 	src/cal\
 	src/cksum\
@@ -63,6 +63,7 @@ BIN=\
 	src/kill\
 	src/logname\
 	src/mesg\
+	src/more\
 	src/nl\
 	src/nohup\
 	src/od\
@@ -195,7 +196,7 @@ $(OBJ): $(HDR) config.mk
 
 # SUFFIX RULES
 .o:
-	$(CC) $(LDFLAGS) -o $@ $< $(LIB)
+	$(CC) $(LDFLAGS) -o $@ $< $(LIB) $(LDLIBS)
 
 .c.o:
 	$(CC) $(CFLAGS) $(CPPFLAGS) -I $(INC) -o $@ -c $<
@@ -281,12 +282,12 @@ cbase: $(LIB) $(SRC)
 	echo '#include <string.h>'                                                                                                                              >> build/$@.c
 	for f in $(SRC); do echo "int $$(echo "$$(basename $${f%.c})" | sed s/-/_/g)_main(int, char **);"; done                                                 >> build/$@.c
 	echo 'int main(int argc, char *argv[]) { char *s = basename(argv[0]);'                                                                                  >> build/$@.c
-	echo 'if(!strcmp(s,"utilchest")) { argc--; argv++; s = basename(argv[0]); } if(0) ;'                                                                    >> build/$@.c
+	echo 'if(!strcmp(s,"cbase")) { argc--; argv++; s = basename(argv[0]); } if(0) ;'                                                                    >> build/$@.c
 	for f in $(SRC); do echo "else if(!strcmp(s, \"$$(basename $${f%.c})\")) return $$(echo "$$(basename $${f%.c})" | sed s/-/_/g)_main(argc, argv);"; done >> build/$@.c
 	echo 'else { '                                                                                                                                          >> build/$@.c
 	for f in $(SRC); do echo "fputs(\"$$(basename $${f%.c}) \", stdout);"; done                                                                             >> build/$@.c
 	echo 'putchar(0xa); }; return 0; }'                                                                                                                     >> build/$@.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -I $(INC) -o $@ build/*.c $(LIB)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -I $(INC) -o $@ build/*.c $(LIB) $(LDLIBS)
 	rm -rf build
 
 cbase-install: cbase
