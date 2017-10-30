@@ -78,7 +78,6 @@ BIN=\
 	src/stty\
 	src/su\
 	src/tail\
-	src/tar\
 	src/tee\
 	src/touch\
 	src/tr\
