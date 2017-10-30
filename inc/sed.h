@@ -187,5 +187,5 @@ extern wint_t	wc_get(char **, int);
 #define fetch(s)	(multibyte ? wc_get(s, 1) : (*(*(s))++ & 0377))
 #define	peek(s)		(multibyte ? wc_get(s, 0) : (**(s) & 0377))
 extern struct yitem	*ylook(wint_t , struct yitem **, int);
-extern void	*smalloc(size_t);
+/*extern void	*smalloc(size_t);*/
 extern void	growsp(const char *);

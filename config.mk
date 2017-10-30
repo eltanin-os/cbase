@@ -20,7 +20,7 @@ CPPFLAGS += -D_GNU_SOURCE $(DEFS) $(PATHS) $(STDS)
 
 ## DEFAULT
 AR     = ar
-CC     = ecc
+CC     = cc
 RANLIB = ranlib
 
 CPPFLAGS += -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_FILE_OFFSET_BITS=64

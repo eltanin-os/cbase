@@ -58,7 +58,7 @@ int		selection;		/* one of '\0' 'g' 'p' 'i' */
 int	traditional_donice(int which, int who, int prio);
 int	traditional_renice(int argc, char **argv);
 
-void
+static void
 usage(void)
 {
 	fprintf(stderr, "\
@@ -222,7 +222,7 @@ traditional_renice(int argc, char **argv)
 		}
 		if (which == PRIO_USER) {
 			register struct passwd	*pwd = getpwnam(*argv);
-			
+
 			if (pwd == NULL) {
 				fprintf(stderr, "renice: %s: unknown user\n",
 					*argv);

@@ -37,4 +37,4 @@ extern int		tabstop;
 extern void	settab(const char *);
 extern void	addtab(long long);
 extern void	badts(void);
-extern void	*scalloc(size_t, size_t);
+/*extern void	*scalloc(size_t, size_t);*/

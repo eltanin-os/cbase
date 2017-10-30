@@ -1007,7 +1007,7 @@ srealloc(void *vp, size_t nbytes)
 	return p;
 }
 
-void *
+static void *
 smalloc(size_t nbytes)
 {
 	return srealloc(NULL, nbytes);

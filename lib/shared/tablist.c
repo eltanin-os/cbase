@@ -90,7 +90,7 @@ badts(void)
 	exit(2);
 }
 
-void *
+static void *
 scalloc(size_t nmemb, size_t size)
 {
 	void	*vp;
