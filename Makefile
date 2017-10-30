@@ -289,9 +289,14 @@ cbase: $(LIB) $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -I $(INC) -o $@ build/*.c $(LIB)
 	rm -rf build
 
+cbase-install: cbase
+	install -dm 755 $(DESTDIR)/$(PREFIX)/bin
+	install -csm 755 cbase $(DESTDIR)/$(PREFIX)/bin
+	for f in $$(echo $(BIN) | sed 's/src\///g'); do ln -s cbase $(DESTDIR)/$(PREFIX)/bin/$$f; done
+
 install: all
 	install -dm 755 $(DESTDIR)/$(PREFIX)/bin
-	install -c -s -m 755 $(BIN) $(DESTDIR)/$(PREFIX)/bin
+	install -csm 755 $(BIN) $(DESTDIR)/$(PREFIX)/bin
 
 clean:
 	rm -f $(BIN) $(OBJ) $(LIB) inc/config.mk inc/heirloom.h cbase
