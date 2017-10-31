@@ -60,6 +60,7 @@ BIN=\
 	src/fold\
 	src/getconf\
 	src/grep\
+	src/install\
 	src/join\
 	src/kill\
 	src/logname\
