@@ -52,7 +52,7 @@ static const struct {
 	{ 0,	0 }
 };
 
-void *
+static void *
 scalloc(size_t nmemb, size_t size)
 {
 	void	*p;

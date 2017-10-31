@@ -42,7 +42,6 @@ HDR=\
 	inc/wctype.h
 
 # SOURCE
-# diff diffh main(from where?) newform tabs
 BIN=\
 	src/cal\
 	src/cksum\
@@ -52,6 +51,8 @@ BIN=\
 	src/csplit\
 	src/dd\
 	src/df\
+	src/diff\
+	src/diffh\
 	src/du\
 	src/ed\
 	src/expand\
@@ -64,6 +65,7 @@ BIN=\
 	src/logname\
 	src/mesg\
 	src/more\
+	src/newform\
 	src/nl\
 	src/nohup\
 	src/od\
@@ -78,8 +80,10 @@ BIN=\
 	src/split\
 	src/stty\
 	src/su\
+	src/tabs\
 	src/tail\
 	src/tee\
+	src/test\
 	src/touch\
 	src/tr\
 	src/tsort\

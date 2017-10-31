@@ -1,23 +1,14 @@
 ## HEIRLOOM
-SHELL = /bin/sh
-
-DEFBIN = /usr/5bin
-SUSBIN = /usr/5bin/posix
-SU3BIN = /usr/5bin/posix2001
-UCBBIN = /usr/ucb
-CCSBIN = /usr/ccs/bin
+SHELL  = /bin/sh
 DFLDIR = /etc/default
 
 DEFS  = -DDEFAULT='"$(DFLDIR)/ps"' -DSUDFL='"$(DFLDIR)/su"'\
-	-DSHELL='"$(SHELL)"'
-
-PATHS = -DSUSBIN='"$(SUSBIN)"' -DSU3BIN='"$(SU3BIN)"' -DDEFBIN='"$(DEFBIN)"'\
-	-DUCBBIN='"$(UCBBIN)"' -DCCSBIN='"$(CCSBIN)"' -DSV3BIN='$(SV3BIN)'
+	-DSHELL='"$(SHELL)"'       -Dfunc='test' -DDIFFH='"diffh"'
 
 STDS  = -DUCB -DSUS
 
-CPPFLAGS += -D_GNU_SOURCE $(DEFS) $(PATHS) $(STDS)
-LDLIBS = -lcurses -lterminfo
+CPPFLAGS += -D_GNU_SOURCE $(DEFS) $(STDS)
+LDLIBS    = -lcurses -lterminfo
 
 ## DEFAULT
 AR     = ar
@@ -26,6 +17,6 @@ RANLIB = ranlib
 
 CPPFLAGS += -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_FILE_OFFSET_BITS=64
 CFLAGS   += -std=c99 -Wall -pedantic
-LDFLAGS  += -Os
+LDFLAGS  += -Os -static
 
 PREFIX = /usr/local

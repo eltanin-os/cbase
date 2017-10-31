@@ -72,11 +72,9 @@ static const char sccsid[] USED = "@(#)getconf.sl	1.14 (gritter) 01/27/07";
 #undef	POSIX2_VERSION
 #undef	_XOPEN_XCU_VERSION
 #if defined (SU3)
-#define	HEIRLOOM_PATH	SU3BIN ":" DEFBIN ":" CCSBIN ":" UCBBIN
 #define	POSIX2_VERSION	200112
 #define	_XOPEN_XCU_VERSION	600
 #else	/* !SU3 */
-#define	HEIRLOOM_PATH	SUSBIN ":" DEFBIN ":" CCSBIN ":" UCBBIN
 #define	POSIX2_VERSION	199209
 #define	_XOPEN_XCU_VERSION	4
 #endif	/* !SU3 */
@@ -2184,7 +2182,7 @@ getconf(struct sctab *scp, int argc, char *name, char *file)
 				confstr(_CS_PATH, buffer, len) == 0)
 			buffer = NULL;
 #endif	/* _CS_PATH */
-		printf("%s:%s\n", HEIRLOOM_PATH,
+		printf("%s\n",
 				buffer ? buffer : "/bin:/usr/bin");
 		break;
 	}

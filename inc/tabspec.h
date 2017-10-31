@@ -43,5 +43,5 @@ enum {
 	TABERR_ILLTAB	/* illegal tabs */
 } taberrno;
 
-extern void		*scalloc(size_t nmemb, size_t size);
+/*extern void		*scalloc(size_t nmemb, size_t size);*/
 extern struct tabulator	*tabstops(const char *s, int cols);
