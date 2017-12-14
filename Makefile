@@ -53,7 +53,6 @@ BIN=\
 	src/df\
 	src/diff\
 	src/diffh\
-	src/du\
 	src/ed\
 	src/expand\
 	src/find\
@@ -63,27 +62,23 @@ BIN=\
 	src/install\
 	src/join\
 	src/kill\
-	src/logname\
 	src/mesg\
 	src/more\
 	src/newform\
 	src/nl\
-	src/nohup\
 	src/od\
 	src/paste\
 	src/pathchk\
 	src/pr\
 	src/printf\
 	src/ps\
-	src/renice\
-	src/sed0\
+	src/sed\
 	src/sort\
 	src/split\
 	src/stty\
 	src/su\
 	src/tabs\
 	src/tail\
-	src/tee\
 	src/test\
 	src/touch\
 	src/tr\
