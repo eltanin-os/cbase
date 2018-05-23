@@ -3,96 +3,286 @@ include config.mk
 .SUFFIXES:
 .SUFFIXES: .o .c
 
-INC= inc
+GOPTS= -I inc
 
 HDR=\
 	inc/_alloca.h\
-	inc/alloc.h\
+	inc/_malloc.h\
+	inc/_utmpx.h\
 	inc/asciitype.h\
 	inc/atoll.h\
 	inc/blank.h\
-	inc/config.h\
 	inc/colldata.h\
-	inc/defs.h\
-	inc/diff.h\
-	inc/heirloom.h\
+	inc/config.h\
 	inc/getdir.h\
-	inc/grep.h\
+	inc/heirloom.h\
 	inc/iblok.h\
-	inc/_malloc.h\
 	inc/mbtowi.h\
 	inc/memalign.h\
 	inc/msgselect.h\
 	inc/oblok.h\
 	inc/pathconf.h\
 	inc/pfmt.h\
+	inc/re.h\
 	inc/regdfa.h\
 	inc/regex.h\
 	inc/regexp.h\
 	inc/regexpr.h\
-	inc/re.h\
-	inc/sed.h\
 	inc/sfile.h\
 	inc/sigset.h\
-	inc/tablist.h\
-	inc/tabspec.h\
-	inc/_utmpx.h\
 	inc/wchar.h\
 	inc/wcharm.h\
 	inc/wctype.h
 
-# SOURCE
 BIN=\
-	src/cal\
-	src/cksum\
-	src/cmp\
-	src/comm\
-	src/cut\
-	src/csplit\
-	src/dd\
-	src/df\
-	src/diff\
-	src/diffh\
-	src/ed\
-	src/expand\
-	src/find\
-	src/fold\
-	src/getconf\
-	src/grep\
-	src/install\
-	src/join\
-	src/kill\
-	src/mesg\
-	src/more\
-	src/newform\
-	src/nl\
-	src/od\
-	src/paste\
-	src/pathchk\
-	src/pr\
-	src/printf\
-	src/ps\
-	src/sed\
-	src/sort\
-	src/split\
-	src/stty\
-	src/su\
-	src/tabs\
-	src/tail\
-	src/test\
-	src/touch\
-	src/tr\
-	src/tsort\
-	src/unexpand\
-	src/uniq\
-	src/wc\
-	src/who\
-	src/xargs
+	src/awk/awk\
+	src/bc/bc\
+	src/cal/cal\
+	src/comm/comm\
+	src/cpio/cpio\
+	src/cpio/pax\
+	src/csplit/csplit\
+	src/cut/cut\
+	src/dc/dc\
+	src/dd/dd\
+	src/df/df\
+	src/diff/diff\
+	src/ed/ed\
+	src/expand/expand\
+	src/expand/unexpand\
+	src/expr/expr\
+	src/file/file\
+	src/find/find\
+	src/fmt/fmt\
+	src/fold/fold\
+	src/getconf/getconf\
+	src/grep/egrep\
+	src/grep/fgrep\
+	src/grep/grep\
+	src/hd/hd\
+	src/join/join\
+	src/lex/lex\
+	src/mesg/mesg\
+	src/more/more\
+	src/nl/nl\
+	src/od/od\
+	src/paste/paste\
+	src/patch/patch\
+	src/pgrep/pgrep\
+	src/pr/pr\
+	src/printf/printf\
+	src/ps/ps\
+	src/sed/sed\
+	src/sort/sort\
+	src/split/split\
+	src/stty/stty\
+	src/tabs/tabs\
+	src/tail/tail\
+	src/tar/tar\
+	src/test/test\
+	src/tr/tr\
+	src/tsort/tsort\
+	src/uniq/uniq\
+	src/wc/wc\
+	src/what/what\
+	src/who/who\
+	src/xargs/xargs\
+	src/yacc/yacc
 
-# LIB SOURCE
+CSR=\
+	src/bc/bc.c\
+	src/expr/expr.c\
+	src/grep/egrep.c\
+	src/lex/parser.c
+
+MAN1=\
+	man/awk.1\
+	man/bc.1\
+	man/cal.1\
+	man/comm.1\
+	man/cpio.1\
+	man/csplit.1\
+	man/cut.1\
+	man/dc.1\
+	man/dd.1\
+	man/df.1\
+	man/df.1b\
+	man/diff.1\
+	man/ed.1\
+	man/egrep.1\
+	man/expand.1\
+	man/expr.1\
+	man/fgrep.1\
+	man/file.1\
+	man/find.1\
+	man/fmt.1\
+	man/fold.1\
+	man/getconf.1\
+	man/grep.1\
+	man/hd.1\
+	man/join.1\
+	man/lex.1\
+	man/mesg.1\
+	man/more.1\
+	man/newform.1\
+	man/nl.1\
+	man/od.1\
+	man/paste.1\
+	man/patch.1\
+	man/pax.1\
+	man/pgrep.1\
+	man/pr.1\
+	man/printf.1\
+	man/ps.1\
+	man/ps.1b\
+	man/sed.1\
+	man/sort.1\
+	man/split.1\
+	man/stty.1\
+	man/stty.1b\
+	man/tabs.1\
+	man/tail.1\
+	man/tar.1\
+	man/test.1\
+	man/test.1b\
+	man/tr.1\
+	man/tr.1b\
+	man/tsort.1\
+	man/unexpand.1\
+	man/uniq.1\
+	man/wc.1\
+	man/what.1\
+	man/who.1\
+	man/xargs.1\
+	man/yacc.1
+
+# IND OBJ
+AWKOBJ=\
+	src/awk/awk.o\
+	src/awk/b.o\
+	src/awk/lex.o\
+	src/awk/lib.o\
+	src/awk/parse.o\
+	src/awk/proctab.o\
+	src/awk/run.o\
+	src/awk/tran.o\
+	src/awk/ytab.o
+
+CPIOOBJ=\
+	src/cpio/blast.o\
+	src/cpio/cpio.o\
+	src/cpio/crc32.o\
+	src/cpio/expand.o\
+	src/cpio/explode.o\
+	src/cpio/inflate.o\
+	src/cpio/unshrink.o\
+	src/cpio/version.o\
+	src/cpio/flags.o\
+	src/cpio/nonpax.o
+
+PATCHOBJ=\
+	src/patch/backupfile.o\
+	src/patch/inp.o\
+	src/patch/mkpath.o\
+	src/patch/patch.o\
+	src/patch/pch.o\
+	src/patch/util.o
+
+PAXOBJ=\
+	src/cpio/blast.o\
+	src/cpio/cpio.o\
+	src/cpio/crc32.o\
+	src/cpio/expand.o\
+	src/cpio/explode.o\
+	src/cpio/inflate.o\
+	src/cpio/unshrink.o\
+	src/cpio/version.o\
+	src/cpio/pax.o
+
+DCOBJ=\
+	src/dc/dc.o\
+	src/dc/version.o
+
+DIFFOBJ=\
+	src/diff/diff.o\
+	src/diff/diffdir.o\
+	src/diff/diffreg.o\
+	src/diff/diffver.o
+
+EXPANDOBJ=\
+	src/expand/expand.o\
+	src/expand/tablist.o
+
+UNEXPANDOBJ=\
+	src/expand/unexpand.o\
+	src/expand/tablist.o
+
+EGREPOBJ=\
+	src/grep/alloc.o\
+	src/grep/grep.o\
+	src/grep/grid.o\
+	src/grep/svid3.o\
+	src/grep/egrep.o\
+	src/grep/plist.o
+
+FGREPOBJ=\
+	src/grep/alloc.o\
+	src/grep/grep.o\
+	src/grep/grid.o\
+	src/grep/svid3.o\
+	src/grep/ac.o\
+	src/grep/fgrep.o\
+	src/grep/plist.o
+
+GREPOBJ=\
+	src/grep/alloc.o\
+	src/grep/grep.o\
+	src/grep/grid.o\
+	src/grep/svid3.o\
+	src/grep/ggrep.o
+
+LEXOBJ=\
+	src/lex/getopt.o\
+	src/lex/header.o\
+	src/lex/lsearch.o\
+	src/lex/lex.o\
+	src/lex/parser.o\
+	src/lex/sub1.o\
+	src/lex/sub2.o\
+	src/lex/sub3.o\
+	src/lex/wcio.o
+
+SEDOBJ=\
+	src/sed/sed0.o\
+	src/sed/sed1.o\
+	src/sed/version.o
+
+TABSOBJ=\
+	src/tabs/tabs.o\
+	src/tabs/tabspec.o
+
+NEWFORMOBJ=\
+	src/tabs/newform.o\
+	src/tabs/tabspec.o
+
+TESTOBJ=\
+	src/test/helper.o\
+	src/test/test.o\
+	src/test/ttest.o\
+	src/test/version.o
+
+YACCOBJ=\
+	src/yacc/getopt.o\
+	src/yacc/y1.o\
+	src/yacc/y2.o\
+	src/yacc/y3.o\
+	src/yacc/y4.o\
+	src/yacc/y5.o
+
+# LIB SRC
 LIBCOMMONSRC=\
-	lib/common/asciitype.c\
 	lib/common/CHECK.c\
+	lib/common/asciitype.c\
 	lib/common/getdir.c\
 	lib/common/getopt.c\
 	lib/common/gmatch.c\
@@ -126,9 +316,9 @@ LIBCOMMONSRC=\
 	lib/common/vpfmt.c
 
 LIBUXRESRC=\
-	lib/uxre/bracket.c\
 	lib/uxre/_collelem.c\
 	lib/uxre/_collmult.c\
+	lib/uxre/bracket.c\
 	lib/uxre/onefile.c\
 	lib/uxre/regcomp.c\
 	lib/uxre/regdfa.c\
@@ -149,76 +339,158 @@ LIBWCHARSRC=\
 	lib/wchar/wctfunc.c\
 	lib/wchar/wctomb.c\
 	lib/wchar/wctype.c\
-	lib/wchar/wcwidth.c\
-
-LIBSHAREDSRC=\
-	lib/shared/ac.c\
-	lib/shared/alloc.c\
-	lib/shared/col.c\
-	lib/shared/diffdir.c\
-	lib/shared/diffreg.c\
-	lib/shared/diffver.c\
-	lib/shared/grid.c\
-	lib/shared/helper.c\
-	lib/shared/plist.c\
-	lib/shared/rcomp.c\
-	lib/shared/sed1.c\
-	lib/shared/strsig.c\
-	lib/shared/sus.c\
-	lib/shared/svid3.c\
-	lib/shared/tablist.c\
-	lib/shared/tabspec.c\
-	lib/shared/test.c\
-	lib/shared/version.c
+	lib/wchar/wcwidth.c
 
 # LIB PATH
-LIBCOMMON = lib/libcommon.a
-LIBUXRE   = lib/libuxre.a
-LIBWCHAR  = lib/libwchar.a
-LIBSHARED = lib/libshared.a
+LIBCOMMON= lib/libcommon.a
+LIBUXRE=   lib/libuxre.a
+LIBWCHAR=  lib/libwchar.a
 
 # LIB OBJS
-LIBCOMMONOBJ = $(LIBCOMMONSRC:.c=.o)
-LIBUXREOBJ   = $(LIBUXRESRC:.c=.o)
-LIBWCHAROBJ  = $(LIBWCHARSRC:.c=.o)
-LIBSHAREDOBJ = $(LIBSHAREDSRC:.c=.o)
+LIBCOMMONOBJ= $(LIBCOMMONSRC:.c=.o)
+LIBUXREOBJ=   $(LIBUXRESRC:.c=.o)
+LIBWCHAROBJ=  $(LIBWCHARSRC:.c=.o)
 
-# ALL
-LIB= $(LIBSHARED) $(LIBCOMMON) $(LIBUXRE) $(LIBWCHAR)
-OBJ= $(BIN:=.o) $(LIBCOMMONOBJ) $(LIBUXREOBJ) $(LIBWCHAROBJ) $(LIBSHAREDOBJ)
-SRC= $(BIN:=.c)
+# GLOBAL VARS
+LIB=$(LIBCOMMON) $(LIBUXRE) $(LIBWCHAR)
+OBJ=$(BIN:=.o) $(AWKOBJ) $(CPIOOBJ) $(PAXOBJ) $(DCOBJ) $(DIFFOBJ) $(EXPANDOBJ) $(UNEXPANDOBJ) $(EGREPOBJ) $(FGREPOBJ) $(GREPOBJ) $(LEXOBJ) $(SEDOBJ) $(TABSOBJ) $(NEWFORMOBJ) $(TESTOBJ) $(YACCOBJ) $(LIBCOMMONOBJ) $(LIBUXREOBJ) $(LIBWCHAROBJ)
+SRC=$(BIN:=.c)
 
-# VAR RULES
+# GENERAL RULES
 all: $(BIN)
 
 $(BIN): $(LIB) $(@:=.o)
 $(OBJ): $(HDR) config.mk
 
+# SPECIAL OBJECTS
+src/awk/ytab.o:
+	$(YACC) $(YFLAGS) src/awk/awkgram.y
+	mv y.tab.c src/awk/ytab.c
+	mv y.tab.h src/awk/ytab.h
+	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ -c src/awk/ytab.c
+
+# SPECIAL BINARIES
+src/awk/awk: $(AWKOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(AWKOBJ) $(AWKLD)
+
+src/cpio/cpio: $(CPIOOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(CPIOOBJ) $(LIB) $(CPIOLD)
+
+src/cpio/pax: $(PAXOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(PAXOBJ) $(LIB) $(CPIOLD)
+
+src/csplit/csplit: src/csplit/csplit.o
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $< $(LIB) $(AWKLD)
+
+src/dc/dc: $(DCOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(DCOBJ) $(LIB)
+
+src/diff/diff: $(DIFFOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(DIFFOBJ) $(LIB)
+
+src/expand/expand: $(EXPANDOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(EXPANDOBJ) $(LIB)
+
+src/expand/unexpand: $(UNEXPANDOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(UNEXPANDOBJ) $(LIB)
+
+src/grep/egrep: $(EGREPOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(EGREPOBJ) $(LIB)
+
+src/grep/fgrep: $(FGREPOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(FGREPOBJ) $(LIB)
+
+src/grep/grep: $(GREPOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(GREPOBJ) $(LIB)
+
+src/lex/lex: $(LEXOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(LEXOBJ)
+
+src/more/more: src/more/more.o
+	@echo "CC $@ $< $(LIB)"
+	@$(CC) $(LDFLAGS) -o $@ $< $(LIB) $(MORELD)
+
+src/patch/patch: $(PATCHOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(PATCHOBJ) $(PATCHLD)
+
+src/sed/sed: $(SEDOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(SEDOBJ) $(LIB)
+
+src/tabs/tabs: $(TABSOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(TABSOBJ) $(LIB) $(TABSLD)
+
+src/tabs/newform: $(NEWFORMOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(NEWFORMOBJ) $(LIB)
+
+src/test/test: $(TESTOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(TESTOBJ) $(LIB)
+
+src/yacc/yacc: $(YACCOBJ)
+	@echo "CC $@ $?"
+	@$(CC) $(LDFLAGS) -o $@ $(YACCOBJ)
+
+# SPECIAL SOURCE
+src/bc/bc.c: src/bc/bc.y
+	@echo YACC $< $@
+	@$(YACC) $<
+	@sed -f src/bc/yyval.sed < y.tab.c > $@
+	@rm -f y.tab.c
+
+src/expr/expr.c:  src/expr/expr.y
+	@echo YACC $< $@
+	@$(YACC) $<
+	@mv y.tab.c $@
+
+src/grep/egrep.c: src/grep/egrep.y
+	@echo YACC $< $@
+	@$(YACC) $<
+	@mv y.tab.c $@
+
+src/lex/parser.c: src/lex/parser.y
+	@echo YACC $< $@
+	@$(YACC) $<
+	@mv y.tab.c $@
+
 # SUFFIX RULES
 .o:
-	$(CC) $(LDFLAGS) -o $@ $< $(LIB) $(LDLIBS)
+	@echo "CC $@ $< $(LIB)"
+	@$(CC) $(LDFLAGS) -o $@ $< $(LIB)
 
 .c.o:
-	$(CC) $(CFLAGS) $(CPPFLAGS) -I $(INC) -o $@ -c $<
+	@echo "CC $@ $<"
+	@$(CC) $(CFLAGS) $(CPPFLAGS) $(GOPTS) -o $@ -c $<
 
-# LIBRARIES RULES
+# LIB RULES
 $(LIBCOMMON): $(LIBCOMMONOBJ)
 	$(AR) rc $@ $?
 	$(RANLIB) $@
 
-$(LIBUXRE): $(LIBUXREOBJ)
+$(LIBUXRE):   $(LIBUXREOBJ)
 	$(AR) rc $@ $?
 	$(RANLIB) $@
 
-$(LIBWCHAR): $(LIBWCHAROBJ)
+$(LIBWCHAR):  $(LIBWCHAROBJ)
 	$(AR) rc $@ $?
 	$(RANLIB) $@
 
-$(LIBSHARED): $(LIBSHAREDOBJ)
-	$(AR) rc $@ $?
-	$(RANLIB) $@
-
-# OTHERS RULES
+# HDR RULES
 inc/config.h:
 	-echo '/*	Auto-generated by make. Do no edit!	*/' >inc/config.h
 	-echo '#include <wchar.h>' >___build$$$$.c ; \
@@ -273,34 +545,20 @@ inc/heirloom.h: CHANGES
 			version + 20000000); \
 		exit }' >inc/heirloom.h
 
-# USER ACTIONS
-cbase: $(LIB) $(SRC)
-	mkdir -p build
-	for f in $(SRC); do sed "s/^main(/$$(echo "$$(basename $${f%.c})" | sed s/-/_/g)_&/" < $$f > build/$$(basename $$f); done
-	echo '#include <libgen.h>'                                                                                                                              > build/$@.c
-	echo '#include <stdio.h>'                                                                                                                               >> build/$@.c
-	echo '#include <string.h>'                                                                                                                              >> build/$@.c
-	for f in $(SRC); do echo "int $$(echo "$$(basename $${f%.c})" | sed s/-/_/g)_main(int, char **);"; done                                                 >> build/$@.c
-	echo 'int main(int argc, char *argv[]) { char *s = basename(argv[0]);'                                                                                  >> build/$@.c
-	echo 'if(!strcmp(s,"cbase")) { argc--; argv++; s = basename(argv[0]); } if(0) ;'                                                                    >> build/$@.c
-	for f in $(SRC); do echo "else if(!strcmp(s, \"$$(basename $${f%.c})\")) return $$(echo "$$(basename $${f%.c})" | sed s/-/_/g)_main(argc, argv);"; done >> build/$@.c
-	echo 'else { '                                                                                                                                          >> build/$@.c
-	for f in $(SRC); do echo "fputs(\"$$(basename $${f%.c}) \", stdout);"; done                                                                             >> build/$@.c
-	echo 'putchar(0xa); }; return 0; }'                                                                                                                     >> build/$@.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -I $(INC) -o $@ build/*.c $(LIB) $(LDLIBS)
-	rm -rf build
-
-cbase-install: cbase
-	install -dm 755 $(DESTDIR)/$(PREFIX)/bin
-	install -csm 755 cbase $(DESTDIR)/$(PREFIX)/bin
-	for f in $$(echo $(BIN) | sed 's/src\///g'); do ln -s cbase $(DESTDIR)/$(PREFIX)/bin/$$f; done
-
+# USER RULES
 install: all
-	install -dm 755 $(DESTDIR)/$(PREFIX)/bin
-	install -csm 755 $(BIN) $(DESTDIR)/$(PREFIX)/bin
+	install -dm  755                  $(DESTDIR)/$(PREFIX)/bin
+	install -dm  755                  $(DESTDIR)/$(PREFIX)/lib
+	install -csm 755 $(BIN)           $(DESTDIR)/$(PREFIX)/bin
+	install -cm  644 src/yacc/yaccpar $(DESTDIR)/$(PREFIX)/lib
+	install -cm  644 src/file/magic   $(DESTDIR)/$(PREFIX)/lib
+
+install-man:
+	install -dm 755         $(DESTDIR)/$(MANPREFIX)/man1
+	install -cm 644 $(MAN1) $(DESTDIR)/$(MANPREFIX)/man1
 
 clean:
-	rm -f $(BIN) $(OBJ) $(LIB) inc/config.mk inc/heirloom.h cbase
+	rm -f $(BIN) $(LIB) $(OBJ) y.tab.* $(CSR) yacc.*
 
 .PHONY:
-	all install clean
+	all clean

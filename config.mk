@@ -1,22 +1,48 @@
-## HEIRLOOM
-SHELL  = /bin/sh
-DFLDIR = /etc/default
-
-DEFS  = -DDEFAULT='"$(DFLDIR)/ps"' -DSUDFL='"$(DFLDIR)/su"'\
-	-DSHELL='"$(SHELL)"'       -Dfunc='test' -DDIFFH='"diffh"'
-
-STDS  = -DUCB -DSUS
-
-CPPFLAGS += -D_GNU_SOURCE $(DEFS) $(STDS)
-LDLIBS    = -lcurses -lterminfo
-
 ## DEFAULT
 AR     = ar
 CC     = cc
+YACC   = yacc -d
 RANLIB = ranlib
 
-CPPFLAGS += -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_FILE_OFFSET_BITS=64
-CFLAGS   += -std=c99 -Wall -pedantic
-LDFLAGS  += -Os -static
+CPPFLAGS = -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_FILE_OFFSET_BITS=64
+CFLAGS   = -Os -std=c99 -Wall -pedantic
+LDFLAGS  =
 
-PREFIX = /usr/local
+PREFIX    = /usr/local
+MANPREFIX = /usr/local/share/man
+
+## HEIRLOOM
+SHELL   = /bin/sh
+DFLDIR  = $(PREFIX)/etc/default
+DLIBDIR = $(PREFIX)/lib
+
+DEFS =\
+	-DCCSBIN='"/bin"'\
+	-DDEFBIN='"/bin"'\
+	-DSUSBIN='"/bin"'\
+	-DSV3BIN='"/bin"'\
+	-DUCBBIN='"/bin"'\
+	-DDEFAULT='"$(DFLDIR)/ps"'\
+	-DDC='"$(SV3BIN)/dc"'\
+	-DDIFFH='"$(DFLDIR)/diffh"'\
+	-Dfunc='test'\
+	-DFORMPATH='"$(DLIBDIR)/lex"'\
+	-DLIBB='"$(DLIBDIR)/lib.b"'\
+	-DMAGIC='"$(DLIBDIR)/magic"'\
+	-DPARSER='"$(LIBDIR)/yaccpar"'\
+	-DSHELL='"$(SHELL)"'\
+	-DSUDFL='"$(DFLDIR)/su"'\
+	-DTARDFL='"$(DFLDIR)/tar"'\
+	-DUSE_ZLIB=1\
+	-DUSE_BZLIB=0
+
+STDS =\
+	-DUCB\
+	-DSUS
+
+CPPFLAGS += -D_GNU_SOURCE $(DEFS) $(STDS)
+AWKLD   = -lm
+CPIOLD  = -lz
+MORELD  = -lcurses
+TABSLD  = -lcurses
+# PATCHLD = -lbsd
