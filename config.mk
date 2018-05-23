@@ -33,7 +33,7 @@ DEFS =\
 	-DSHELL='"$(SHELL)"'\
 	-DSUDFL='"$(DFLDIR)/su"'\
 	-DTARDFL='"$(DFLDIR)/tar"'\
-	-DUSE_ZLIB=1\
+	-DUSE_ZLIB=0\
 	-DUSE_BZLIB=0
 
 STDS =\
@@ -42,7 +42,7 @@ STDS =\
 
 CPPFLAGS += -D_GNU_SOURCE $(DEFS) $(STDS)
 AWKLD   = -lm
-CPIOLD  = -lz
+#CPIOLD  = -lz -lbz2
 MORELD  = -lcurses
 TABSLD  = -lcurses
 # PATCHLD = -lbsd

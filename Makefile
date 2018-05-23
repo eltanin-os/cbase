@@ -76,6 +76,7 @@ BIN=\
 	src/sort/sort\
 	src/split/split\
 	src/stty/stty\
+	src/tabs/newform\
 	src/tabs/tabs\
 	src/tail/tail\
 	src/tar/tar\
