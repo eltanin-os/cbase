@@ -79,7 +79,6 @@ BIN=\
 	src/tabs/newform\
 	src/tabs/tabs\
 	src/tail/tail\
-	src/tar/tar\
 	src/test/test\
 	src/tr/tr\
 	src/tsort/tsort\
@@ -143,7 +142,6 @@ MAN1=\
 	man/stty.1b\
 	man/tabs.1\
 	man/tail.1\
-	man/tar.1\
 	man/test.1\
 	man/test.1b\
 	man/tr.1\
