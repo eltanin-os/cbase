@@ -1,0 +1,1859 @@
+
+# line 2 "src/bc/bc.y"
+/*	from 4.4BSD /usr/src/usr.bin/bc/bc.y	*/
+/*-
+ * Copyright (c) 1991, 1993
+ *	The Regents of the University of California.  All rights reserved.
+ *
+ * This module is believed to contain source code proprietary to AT&T.
+ * Use and redistribution is subject to the Berkeley Software License
+ * Agreement and your Software Agreement with AT&T (Western Electric).
+ *
+ *	from bc.y	8.1 (Berkeley) 6/6/93
+ */
+/*
+ * Copyright(C) Caldera International Inc. 2001-2002. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *   Redistributions of source code and documentation must retain the
+ *    above copyright notice, this list of conditions and the following
+ *    disclaimer.
+ *   Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *   All advertising materials mentioning features or use of this software
+ *    must display the following acknowledgement:
+ *      This product includes software developed or owned by Caldera
+ *      International, Inc.
+ *   Neither the name of Caldera International, Inc. nor the names of
+ *    other contributors may be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * USE OF THE SOFTWARE PROVIDED FOR UNDER THIS LICENSE BY CALDERA
+ * INTERNATIONAL, INC. AND CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL CALDERA INTERNATIONAL, INC. BE
+ * LIABLE FOR ANY DIRECT, INDIRECT INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#if __GNUC__ >= 3 && __GNUC_MINOR__ >= 4 || __GNUC__ >= 4
+#define	USED	__attribute__ ((used))
+#elif defined __GNUC__
+#define	USED	__attribute__ ((unused))
+#else
+#define	USED
+#endif
+static const char sccsid[] USED = "@(#)bc.sl	1.24 (gritter) 7/3/05";
+#include <unistd.h>
+#include <signal.h>
+#include <limits.h>
+#include <inttypes.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+typedef	intptr_t	YYSTYPE;
+#define	YYSTYPE	YYSTYPE
+	static int cpeek(int c, int yes, int no);
+	static int getch(void);
+	static intptr_t bundle(int a, ...);
+	static void routput(intptr_t *p);
+	static void output(intptr_t *p);
+	static void conout(intptr_t p, intptr_t s);
+	static void pp(intptr_t);
+	static void tp(intptr_t);
+	static void yyinit(int argc, char *argv[]);
+	static intptr_t *getout(void);
+	static intptr_t *getf(intptr_t);
+	static intptr_t *geta(intptr_t);
+	static void yyerror(const char *);
+	static void cantopen(const char *);
+	extern int yylex(void);
+
+#if defined (__GLIBC__) && defined (_IO_getc_unlocked)
+#undef	getc
+#define	getc(f)		_IO_getc_unlocked(f)
+#endif
+# define UMINUS 257
+# define LETTER 258
+# define DIGIT 259
+# define SQRT 260
+# define LENGTH 261
+# define _IF 262
+# define FFF 263
+# define EQ 264
+# define _WHILE 265
+# define _FOR 266
+# define NE 267
+# define LE 268
+# define GE 269
+# define INCR 270
+# define DECR 271
+# define _RETURN 272
+# define _BREAK 273
+# define _DEFINE 274
+# define BASE 275
+# define OBASE 276
+# define SCALE 277
+# define EQPL 278
+# define EQMI 279
+# define EQMUL 280
+# define EQDIV 281
+# define EQREM 282
+# define EQEXP 283
+# define _AUTO 284
+# define DOT 285
+# define QSTR 286
+
+# line 98 "src/bc/bc.y"
+#define	THIS_BC_STRING_MAX	1000
+static FILE *in;
+static char cary[LINE_MAX + 1], *cp = { cary };
+static char string[THIS_BC_STRING_MAX + 3], *str = {string};
+static int crs = '0';
+static int rcrs = '0';  /* reset crs */
+static int bindx = 0;
+static int lev = 0;
+static int ln;
+static char *ss;
+static int bstack[10] = { 0 };
+static char *numb[15] = {
+  " 0", " 1", " 2", " 3", " 4", " 5",
+  " 6", " 7", " 8", " 9", " 10", " 11",
+  " 12", " 13", " 14" };
+static intptr_t *pre, *post;
+
+#ifdef __STDC__
+#include <stdlib.h>
+#include <string.h>
+#define	YYCONST	const
+#else
+#include <malloc.h>
+#include <memory.h>
+#define	YYCONST
+#endif
+
+#if defined(__cplusplus) || defined(__STDC__)
+
+#if defined(__cplusplus) && defined(__EXTERN_C__)
+extern "C" {
+#endif
+#ifndef yyerror
+#if defined(__cplusplus)
+	void yyerror(YYCONST char *);
+#endif
+#endif
+#ifndef yylex
+	int yylex(void);
+#endif
+	int yyparse(void);
+#if defined(__cplusplus) && defined(__EXTERN_C__)
+}
+#endif
+
+#endif
+
+#define yyclearin yychar = -1
+#define yyerrok yyerrflag = 0
+extern int yychar;
+extern int yyerrflag;
+#ifndef YYSTYPE
+#define YYSTYPE int
+#endif
+YYSTYPE yylval;
+YYSTYPE yyval;
+typedef int yytabelem;
+#ifndef YYMAXDEPTH
+#define YYMAXDEPTH 150
+#endif
+#if YYMAXDEPTH > 0
+int yy_yys[YYMAXDEPTH], *yys = yy_yys;
+YYSTYPE yy_yyv[YYMAXDEPTH], *yyv = yy_yyv;
+#else	/* user does initial allocation */
+int *yys;
+YYSTYPE *yyv;
+#endif
+static int yymaxdepth = YYMAXDEPTH;
+# define YYERRCODE 256
+
+# line 407 "src/bc/bc.y"
+
+# define error 256
+
+static int peekc = -1;
+static int sargc;
+static int ifile;
+static char **sargv;
+
+static char funtab[52] = {
+	01,0,02,0,03,0,04,0,05,0,06,0,07,0,010,0,011,0,012,0,013,0,014,0,015,0,016,0,017,0,
+	020,0,021,0,022,0,023,0,024,0,025,0,026,0,027,0,030,0,031,0,032,0 };
+static char atab[52] = {
+	0241,0,0242,0,0243,0,0244,0,0245,0,0246,0,0247,0,0250,0,0251,0,0252,0,0253,0,
+	0254,0,0255,0,0256,0,0257,0,0260,0,0261,0,0262,0,0263,0,0264,0,0265,0,0266,0,
+	0267,0,0270,0,0271,0,0272,0};
+static char *letr[26] = {
+  "a","b","c","d","e","f","g","h","i","j",
+  "k","l","m","n","o","p","q","r","s","t",
+  "u","v","w","x","y","z" } ;
+/*static char *dot = { "." };*/
+
+int
+yylex(void){
+	int c, ch;
+restart:
+	c = getch();
+	peekc = -1;
+	while( c == ' ' || c == '\t' ) c = getch();
+	if(c == '\\'){
+		getch();
+		goto restart;
+	}
+	if( c<= 'z' && c >= 'a' ) {
+		/* look ahead to look for reserved words */
+		peekc = getch();
+		if( peekc >= 'a' && peekc <= 'z' ){ /* must be reserved word */
+			if( c=='i' && peekc=='f' ){ c=_IF; goto skip; }
+			if( c=='w' && peekc=='h' ){ c=_WHILE; goto skip; }
+			if( c=='f' && peekc=='o' ){ c=_FOR; goto skip; }
+			if( c=='s' && peekc=='q' ){ c=SQRT; goto skip; }
+			if( c=='r' && peekc=='e' ){ c=_RETURN; goto skip; }
+			if( c=='b' && peekc=='r' ){ c=_BREAK; goto skip; }
+			if( c=='d' && peekc=='e' ){ c=_DEFINE; goto skip; }
+			if( c=='s' && peekc=='c' ){ c= SCALE; goto skip; }
+			if( c=='b' && peekc=='a' ){ c=BASE; goto skip; }
+			if( c=='i' && peekc == 'b'){ c=BASE; goto skip; }
+			if( c=='o' && peekc=='b' ){ c=OBASE; goto skip; }
+			if( c=='d' && peekc=='i' ){ c=FFF; goto skip; }
+			if( c=='a' && peekc=='u' ){ c=_AUTO; goto skip; }
+			if( c == 'l' && peekc=='e'){ c=LENGTH; goto skip; }
+			if( c == 'q' && peekc == 'u'){getout();}
+			/* could not be found */
+			return( error );
+		skip:	/* skip over rest of word */
+			peekc = -1;
+			while( (ch = getch()) >= 'a' && ch <= 'z' );
+			peekc = ch;
+			return( c );
+		}
+
+		/* usual case; just one single letter */
+
+		yylval = (intptr_t)letr[c-'a'];
+		return( LETTER );
+	}
+	if( c>= '0' && c <= '9' || c>= 'A' && c<= 'F' ){
+		yylval = c;
+		return( DIGIT );
+	}
+	switch( c ){
+	case '.':	return( DOT );
+	case '=':
+		switch( peekc = getch() ){
+		case '=': c=EQ; goto gotit;
+		case '+': c=EQPL; goto gotit;
+		case '-': c=EQMI; goto gotit;
+		case '*': c=EQMUL; goto gotit;
+		case '/': c=EQDIV; goto gotit;
+		case '%': c=EQREM; goto gotit;
+		case '^': c=EQEXP; goto gotit;
+		default:   return( '=' );
+			  gotit:     peekc = -1; return(c);
+		  }
+	case '+':	return( cpeek( '+', INCR, cpeek( '=', EQPL, '+') ) );
+	case '-':	return( cpeek( '-', DECR, cpeek( '=', EQMI, '-') ) ) ;
+	case '<':	return( cpeek( '=', LE, '<' ) );
+	case '>':	return( cpeek( '=', GE, '>' ) );
+	case '!':	return( cpeek( '=', NE, '!' ) );
+	case '/':
+		if((peekc = getch()) == '*'){
+			peekc = -1;
+			while((getch() != '*') || ((peekc = getch()) != '/'));
+			peekc = -1;
+			goto restart;
+		}
+		else if (peekc == '=') {
+			c=EQDIV;
+			goto gotit;
+		}
+		else return(c);
+	case '*':
+		return( cpeek( '=', EQMUL, '*' ) );
+	case '%':
+		return( cpeek( '=', EQREM, '%' ) );
+	case '^':
+		return( cpeek( '=', EQEXP, '^' ) );
+	case '"':	
+		 yylval = (intptr_t)str;
+		 while((c=getch()) != '"'){*str++ = c;
+			if(str >= &string[sizeof string - 1]){yyerror("string space exceeded");
+			getout();
+		}
+	}
+	 *str++ = '\0';
+	return(QSTR);
+	default:	 return( c );
+	}
+}
+
+static int
+cpeek(int c, int yes, int no){
+	if( (peekc=getch()) != c ) return( no );
+	else {
+		peekc = -1;
+		return( yes );
+	}
+}
+
+static int
+getch(void){
+	int ch;
+loop:
+	ch = (peekc < 0) ? getc(in) : peekc;
+	peekc = -1;
+	if(ch != EOF)return(ch);
+	if(++ifile > sargc){
+		if(ifile >= sargc+2)getout();
+		in = stdin;
+		ln = 0;
+		goto loop;
+	}
+	fclose(in);
+	if((in = fopen(sargv[ifile],"r")) != NULL){
+		ln = 0;
+		ss = sargv[ifile];
+		goto loop;
+	}
+	cantopen(sargv[ifile]);
+	return EOF;
+}
+# define b_sp_max 3000
+static intptr_t b_space [ b_sp_max ];
+static intptr_t * b_sp_nxt = { b_space };
+
+static int	bdebug = 0;
+
+static intptr_t
+bundle(int a, ...){
+	intptr_t i, *q;
+	va_list ap;
+
+	i = a;
+	q = b_sp_nxt;
+	if( bdebug ) printf("bundle %ld elements at %lo\n",(long)i,  (long)q );
+	va_start(ap, a);
+	while(i-- > 0){
+		if( b_sp_nxt >= & b_space[b_sp_max] ) yyerror( "bundling space exceeded" );
+		* b_sp_nxt++ = va_arg(ap, intptr_t);
+	}
+	va_end(ap);
+	* b_sp_nxt++ = 0;
+	yyval = (intptr_t)q;
+	return( (intptr_t)q );
+}
+
+static void
+routput(intptr_t *p) {
+	if( bdebug ) printf("routput(%lo)\n", (long)p );
+	if( p >= &b_space[0] && p < &b_space[b_sp_max]){
+		/* part of a bundle */
+		while( *p != 0 ) routput( (intptr_t *)*p++ );
+	}
+	else printf( (char *)p );	 /* character string */
+}
+
+static void
+output(intptr_t *p) {
+	routput( p );
+	b_sp_nxt = & b_space[0];
+	printf( "\n" );
+	fflush(stdout);
+	cp = cary;
+	crs = rcrs;
+}
+
+static void
+conout(intptr_t p, intptr_t s) {
+	printf("[");
+	routput( (intptr_t *)p );
+	printf("]s%s\n", (char *)s );
+	fflush(stdout);
+	lev--;
+}
+
+static void
+yyerror(const char *s) {
+	if(ifile > sargc)ss="teletype";
+	fprintf(stderr, "%s on line %d, %s\n",
+		s ,ss?ln+1:0,ss?ss:"command line");
+	cp = cary;
+	crs = rcrs;
+	bindx = 0;
+	lev = 0;
+	b_sp_nxt = &b_space[0];
+}
+
+static void
+cantopen(const char *fn)
+{
+	char	spc[280];
+	char	*oss = ss;
+
+	ss = 0;
+	snprintf(spc, sizeof spc, "can't open input file %s", fn);
+	yyerror(spc);
+	ss = oss;
+}
+
+static void
+pp(intptr_t s) {
+	/* puts the relevant stuff on pre and post for the letter s */
+
+	bundle(3, "S", s, pre );
+	pre = (intptr_t *)yyval;
+	bundle(4, post, "L", s, "s." );
+	post = (intptr_t *)yyval;
+}
+
+static void
+tp(intptr_t s) { /* same as pp, but for temps */
+	bundle(3, "0S", s, pre );
+	pre = (intptr_t *)yyval;
+	bundle(4, post, "L", s, "s." );
+	post = (intptr_t *)yyval;
+}
+
+static void
+yyinit(int argc,char **argv) {
+	signal(SIGINT, SIG_IGN);
+	sargv=argv;
+	sargc= -- argc;
+	if(sargc == 0)in=stdin;
+	else if((in = fopen(sargv[1],"r")) == NULL) {
+		cantopen(sargv[1]);
+		exit(0);
+	}
+	ifile = 1;
+	ln = 0;
+	ss = sargv[1];
+}
+
+static intptr_t *
+getout(void){
+	printf("q");
+	fflush(stdout);
+	exit(0);
+	/*NOTREACHED*/
+	return(NULL);
+}
+
+static intptr_t *
+getf(intptr_t p) {
+	return(intptr_t *)(&funtab[2*(*((char *)p) -0141)]);
+}
+
+static intptr_t *
+geta(intptr_t p) {
+	return(intptr_t *)(&atab[2*(*((char *)p) - 0141)]);
+}
+
+int
+main(int argc, char **argv)
+{
+	extern int yyparse(void);
+	const char optstring[] = "cdl";
+	int p[2];
+	int i;
+	int cflag = 0, lflag = 0;
+
+
+#ifdef	__GLIBC__
+	putenv("POSIXLY_CORRECT=1");
+#endif
+	while ((i = getopt(argc, argv, optstring)) != EOF) {
+		switch (i) {
+		case 'd':
+		case 'c':
+			cflag = 1;
+			break;
+		case 'l':
+			lflag = 1;
+			break;
+		default:
+			exit(2);
+		}
+	}
+	argv += optind - 1, argc -= optind - 1;
+	if (cflag) {
+		yyinit(argc, argv);
+		yyparse();
+		exit(0);
+	}
+	if (lflag) {
+		*argv-- = LIBB;
+		argc++;
+	}
+	pipe(p);
+	if (fork()==0) {
+		close(1);
+		dup(p[1]);
+		close(p[0]);
+		close(p[1]);
+		yyinit(argc, argv);
+		yyparse();
+		exit(0);
+	}
+	close(0);
+	dup(p[0]);
+	close(p[0]);
+	close(p[1]);
+	execl(DC, "dc", "-", NULL);
+	execl("/usr/5bin/dc", "dc", "-", NULL);
+	execl("/usr/local/bin/dc", "dc", "-", NULL);
+	execl("/usr/contrib/bin/dc", "dc", "-", NULL);
+	execl("/usr/bin/dc", "dc", "-", NULL);
+	return(1);
+}
+static YYCONST yytabelem yyexca[] ={
+-1, 1,
+	0, -1,
+	59, 7,
+	10, 7,
+	-2, 0,
+-1, 12,
+	125, 7,
+	59, 7,
+	10, 7,
+	-2, 0,
+-1, 126,
+	125, 7,
+	59, 7,
+	10, 7,
+	-2, 0,
+-1, 184,
+	125, 7,
+	59, 7,
+	10, 7,
+	-2, 0,
+-1, 193,
+	125, 7,
+	59, 7,
+	10, 7,
+	-2, 0,
+-1, 208,
+	125, 7,
+	59, 7,
+	10, 7,
+	-2, 0,
+-1, 210,
+	125, 7,
+	59, 7,
+	10, 7,
+	-2, 0,
+	};
+# define YYNPROD 121
+# define YYLAST 768
+static YYCONST yytabelem yyact[]={
+
+    26,    92,    31,    98,    38,    20,   142,    88,    77,    76,
+    84,    43,   126,    71,   129,    33,    41,    39,   113,    40,
+    34,    42,   150,    27,    90,    91,    89,    86,    87,    85,
+    44,    34,    23,    26,   164,   152,   165,    43,    20,   144,
+   143,   210,    41,    39,    43,    40,   101,    42,    43,    41,
+    39,   131,    40,    41,    42,    31,    27,    93,    42,   208,
+    34,   162,    34,   193,   127,   160,    26,    37,    44,    35,
+   154,    20,    99,   155,   132,   100,   128,    97,    96,    94,
+    35,    57,    30,    12,   111,    73,    18,    26,    31,    27,
+    17,   214,    20,   184,    44,    36,   222,     3,     1,     0,
+   203,    44,    74,    75,     0,    44,     0,    26,   117,    35,
+    27,    35,    20,     0,     0,     0,    12,     0,     0,    18,
+     0,    31,     0,     0,     0,   145,     0,    26,   112,     0,
+    27,    43,    20,     0,     0,   213,    41,    39,     0,    40,
+   191,    42,    31,   161,     0,    72,   125,     2,    26,    12,
+    27,     0,    18,    20,     0,     0,    50,     0,     0,     0,
+     0,     0,    31,   185,     0,     0,    32,     0,   151,     0,
+    62,    27,     0,    83,   190,   192,     0,   134,     0,     0,
+     0,     0,    31,     0,     0,    26,     0,   202,    44,     0,
+    20,   136,     0,    83,     0,     0,    50,     0,   204,     0,
+     0,     0,     0,    31,    43,     0,     0,   156,    27,    41,
+    39,     0,    40,    83,    42,     0,    14,   134,     6,    32,
+    28,    25,    15,    13,     0,    16,    29,   221,     0,    50,
+    21,    22,     8,     7,    83,    10,    11,     9,   163,     0,
+    31,   166,   168,   167,   205,    24,     5,   133,     0,    14,
+    45,     6,    32,    28,    25,    15,    13,     0,    16,    29,
+    62,    44,     0,    21,    22,     8,     7,    19,    10,    11,
+     9,    83,   159,   215,   217,   211,     0,     0,    24,     5,
+    46,    58,    14,   223,     6,    32,    28,    25,    15,    13,
+   224,    16,    29,     0,     0,   186,    21,    22,     8,     7,
+     0,    10,    11,     9,     0,    79,    32,    28,    25,   140,
+     0,    24,     5,     0,     0,   138,     0,    21,    22,     0,
+     0,     0,    81,    82,    80,    79,    32,    28,    25,    67,
+     0,     0,    24,     0,     0,    63,     0,    21,    22,   209,
+     0,     0,    81,    82,    80,   115,    32,    28,    25,     0,
+     0,     0,    24,     0,   216,     0,   218,    21,    22,     0,
+     0,     0,    81,    82,    80,     0,    79,    32,    28,    25,
+     0,     0,    24,     0,     0,     0,     0,     0,    21,    22,
+     0,     0,     0,    81,    82,    80,    48,    49,     0,     0,
+     0,     0,     0,    24,    51,    52,    53,    54,    55,    56,
+    60,    61,     0,   115,    32,    28,    25,     0,    51,    52,
+    53,    54,    55,    56,     0,    21,    22,     0,     0,     0,
+    81,    82,    80,    43,     0,     0,    48,    49,    41,    39,
+    24,    40,     0,    42,    51,    52,    53,    54,    55,    56,
+   135,     0,     0,     0,     0,     0,     0,    47,     0,     0,
+    59,    64,    68,     0,     0,     0,     0,     0,     0,    48,
+    49,     0,     0,     0,     0,     0,     0,    51,    52,    53,
+    54,    55,    56,     0,     0,     0,     0,     0,     0,   201,
+    44,     0,     0,     0,   188,   189,     0,     0,     0,     0,
+    60,    61,    51,    52,    53,    54,    55,    56,    51,    52,
+    53,    54,    55,    56,   188,   189,     0,     0,     0,     0,
+     0,     0,    51,    52,    53,    54,    55,    56,    69,    70,
+     0,   137,   139,   141,    65,    66,    51,    52,    53,    54,
+    55,    56,    51,    52,    53,    54,    55,    56,    69,    70,
+     4,     0,     0,     0,    65,    66,    51,    52,    53,    54,
+    55,    56,    51,    52,    53,    54,    55,    56,     0,     0,
+     0,    78,     0,     0,     0,     0,     0,    95,    43,     0,
+     0,     0,     0,    41,    39,     0,    40,     0,    42,     0,
+   102,   103,   104,   105,   106,   107,   108,   109,   110,     0,
+   183,   114,     0,     0,   187,     0,     0,     0,   116,   118,
+   119,     0,     0,   120,   121,   122,     0,    43,   123,   124,
+     0,   182,    41,    39,    43,    40,   130,    42,   181,    41,
+    39,     0,    40,     0,    42,    44,    43,     0,     0,     0,
+   158,    41,    39,     0,    40,   146,    42,   148,   149,     0,
+     0,    43,   212,     0,     0,   157,    41,    39,     0,    40,
+     0,    42,     0,     0,     0,    43,     0,     0,     0,     0,
+    41,    39,     0,    40,    44,    42,     0,     0,     0,   130,
+     0,    44,   169,     0,   170,   171,   172,   173,   174,   175,
+   176,   177,   178,    44,   179,   180,     0,     0,     0,     0,
+     0,     0,     0,     0,     0,     0,   114,   170,    44,     0,
+     0,   130,     0,   194,   195,   196,   197,   198,   199,   200,
+    43,   153,    44,     0,   147,    41,    39,     0,    40,     0,
+    42,     0,     0,     0,     0,     0,     0,   206,   207,     0,
+     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+     0,     0,   219,   220,     0,     0,     0,     0,     0,     0,
+     0,     0,     0,     0,     0,     0,     0,    44 };
+static YYCONST yytabelem yypact[]={
+
+-10000000,    -7,    50,  -254,   167,-10000000,   189,-10000000,    41,   220,
+   274,   268,    26,-10000000,-10000000,-10000000,-10000000,-10000000,  -249,  -250,
+   108,  -248,  -251,  -284,   -93,    39,   108,-10000000,    38,    37,
+  -256,-10000000,-10000000,-10000000,-10000000,-10000000,    31,-10000000,   -45,   108,
+   108,   108,   108,   108,   108,   108,   108,   108,-10000000,-10000000,
+    87,-10000000,-10000000,-10000000,-10000000,-10000000,-10000000,    67,   108,   108,
+-10000000,-10000000,   108,   108,   108,-10000000,-10000000,   108,   108,-10000000,
+-10000000,    21,-10000000,-10000000,    36,   108,   -10,    34,-10000000,   156,
+   130,   254,   248,  -252,   -51,-10000000,-10000000,-10000000,   -52,-10000000,
+-10000000,-10000000,   -93,-10000000,   108,   673,   108,   108,-10000000,  -101,
+  -254,   -58,    11,    11,   -64,   -64,   -64,   -64,   167,   618,
+   167,    29,-10000000,-10000000,   167,   116,   604,-10000000,   167,   167,
+   589,   167,   167,   167,   167,-10000000,    26,    25,   108,     2,
+   -26,   108,-10000000,   108,   108,   108,   108,   108,   108,   108,
+   108,   108,-10000000,   108,   108,-10000000,   577,-10000000,   570,   531,
+    50,-10000000,-10000000,   234,-10000000,   145,    47,-10000000,-10000000,-10000000,
+   108,    22,   108,   108,   108,   108,   108,   108,   108,   167,
+   386,   167,   167,   167,   167,   167,   167,   167,   167,    94,
+     7,-10000000,-10000000,-10000000,   -40,-10000000,   108,   108,-10000000,-10000000,
+-10000000,-10000000,    18,    26,     0,   167,   167,   167,   167,   167,
+   167,   214,-10000000,-10000000,    10,  -254,   167,   167,    26,-10000000,
+    26,   108,   108,-10000000,    52,-10000000,-10000000,-10000000,-10000000,   167,
+   167,-10000000,  -254,-10000000,-10000000 };
+static YYCONST yytabelem yypgo[]={
+
+     0,    98,   145,    12,    97,    95,    93,    13,    91,   540,
+   440,    85,    64,    14,    90,    84,    32,    18,    82,    67 };
+static YYCONST yytabelem yyr1[]={
+
+     0,     1,     1,     1,     6,     6,     2,     2,     2,     2,
+     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+    10,    10,    10,    10,    10,    10,    14,    12,     7,     7,
+     3,     3,    13,    13,    13,    13,    13,    13,    13,     9,
+     9,     9,     9,     9,     9,     9,     9,     9,     9,     9,
+     9,     9,     9,     9,     9,     9,     9,     9,     9,     9,
+     9,     9,     9,     9,     9,     9,     9,     9,     9,     9,
+     9,     9,     9,     9,     9,     9,     9,     9,     9,     9,
+     9,     9,     9,     9,     9,     9,     9,     9,     9,     9,
+     9,     9,     9,     9,    15,    15,    17,    17,    16,    18,
+    18,    18,    11,     4,     5,     5,     5,     8,     8,    19,
+    19 };
+static YYCONST yytabelem yyr2[]={
+
+     0,     0,     7,    17,     2,     8,     3,     1,     3,     7,
+    13,     7,    13,     3,     9,     7,     3,     7,     7,     7,
+     7,     7,     7,     7,     3,     3,    15,    15,    17,     9,
+     3,     3,     3,     3,     3,     3,     9,     1,     2,     7,
+     3,     2,     7,     7,     7,     7,     7,     7,     3,     7,
+     7,     5,     7,     7,     7,     7,     9,     5,     5,     5,
+     5,    11,    11,    11,    11,     5,     5,     5,     5,     5,
+     5,     5,     5,     5,     5,     5,     5,     9,     7,     3,
+     5,     7,     5,     3,     3,     7,     7,    13,    13,     9,
+     9,     7,     3,     9,     5,     7,     7,     7,     7,     7,
+     7,     3,     3,     3,     2,     7,     2,     7,     3,     3,
+     3,     5,     1,     7,     0,     3,     7,     3,     7,     2,
+     7 };
+static YYCONST yytabelem yychk[]={
+
+-10000000,    -1,    -2,    -4,    -9,   286,   258,   273,   272,   277,
+   275,   276,   123,   263,   256,   262,   265,   -14,   126,   274,
+    45,   270,   271,   -16,   285,   261,    40,    63,   260,   266,
+   -18,    95,   259,    -3,    10,    59,    -5,   -19,   258,    43,
+    45,    42,    47,    37,    94,    61,    91,   -10,   270,   271,
+    40,   278,   279,   280,   281,   282,   283,    40,    61,   -10,
+   270,   271,    40,    61,   -10,   270,   271,    61,   -10,   270,
+   271,    -7,    -2,   -11,   -11,   -11,   258,   258,    -9,   258,
+   277,   275,   276,   126,   258,   277,   275,   276,   258,   277,
+   275,   276,   285,   -16,    40,    -9,    40,    40,   259,    41,
+    44,    91,    -9,    -9,    -9,    -9,    -9,    -9,    -9,    -9,
+    -9,   -15,    41,   -17,    -9,   258,    -9,    41,    -9,    -9,
+    -9,    -9,    -9,    -9,    -9,   125,    -3,   -12,    40,   -13,
+    -9,    61,    40,    91,    61,   -10,    61,   -10,    61,   -10,
+    61,   -10,   258,    91,    91,   -16,    -9,    41,    -9,    -9,
+   123,   -19,    93,    93,    41,    44,    91,    41,    41,    -2,
+    40,   -13,    59,   264,    60,    62,   267,   269,   268,    -9,
+    -9,    -9,    -9,    -9,    -9,    -9,    -9,    -9,    -9,    -9,
+    -9,    41,    41,    59,    -6,    -3,    61,   -10,   270,   271,
+   -17,    93,   -13,    41,    -9,    -9,    -9,    -9,    -9,    -9,
+    -9,    93,    93,    93,    -7,   284,    -9,    -9,    41,    -2,
+    41,    61,   -10,   125,    -8,   -19,    -2,   -12,    -2,    -9,
+    -9,    -3,    44,   -12,   -19 };
+static YYCONST yytabelem yydef[]={
+
+     1,    -2,     0,   114,     6,     8,    84,    13,    16,   101,
+   102,   103,    -2,    24,    25,   112,   112,   112,     0,     0,
+     0,     0,     0,    79,    83,     0,     0,    92,     0,     0,
+   108,   109,   110,     2,    40,    41,     0,   115,   119,     0,
+     0,     0,     0,     0,     0,     0,     0,     0,    57,    60,
+     0,    30,    31,    32,    33,    34,    35,     0,     0,     0,
+    65,    67,     0,     0,     0,    69,    71,     0,     0,    73,
+    75,     0,    38,    37,     0,     0,    94,     0,    51,    84,
+   101,   102,   103,     0,    58,    66,    70,    74,    59,    68,
+    72,    76,    82,    80,     0,     0,     0,     0,   111,     0,
+     0,     0,    49,    50,    52,    53,    54,    55,     9,     0,
+    11,     0,    78,   104,   106,    84,     0,    15,    17,    18,
+     0,    19,    20,    21,    22,    23,    -2,     0,     0,     0,
+    48,     0,   113,     0,     0,     0,     0,     0,     0,     0,
+     0,     0,    94,     0,     0,    81,     0,    91,     0,     0,
+     0,   116,   120,    56,    77,     0,     0,    14,    90,    39,
+     0,     0,     0,     0,     0,     0,     0,     0,     0,    29,
+     0,    85,    86,    95,    96,    97,    98,    99,   100,     0,
+     0,    89,    93,    36,    -2,     4,     0,     0,    61,    63,
+   105,   107,     0,    -2,     0,    42,    43,    44,    45,    46,
+    47,    56,    62,    64,     0,     0,    10,    12,    -2,    37,
+    -2,     0,     0,     3,     0,   117,    26,    27,    37,    87,
+    88,     5,     0,    28,   118 };
+typedef struct
+#ifdef __cplusplus
+	yytoktype
+#endif
+{
+#ifdef __cplusplus
+const
+#endif
+char *t_name; int t_val; } yytoktype;
+#ifndef YYDEBUG
+#	define YYDEBUG	0	/* don't allow debugging */
+#endif
+
+#if YYDEBUG
+
+yytoktype yytoks[] =
+{
+	"=",	61,
+	"+",	43,
+	"-",	45,
+	"*",	42,
+	"/",	47,
+	"%",	37,
+	"^",	94,
+	"UMINUS",	257,
+	"LETTER",	258,
+	"DIGIT",	259,
+	"SQRT",	260,
+	"LENGTH",	261,
+	"_IF",	262,
+	"FFF",	263,
+	"EQ",	264,
+	"_WHILE",	265,
+	"_FOR",	266,
+	"NE",	267,
+	"LE",	268,
+	"GE",	269,
+	"INCR",	270,
+	"DECR",	271,
+	"_RETURN",	272,
+	"_BREAK",	273,
+	"_DEFINE",	274,
+	"BASE",	275,
+	"OBASE",	276,
+	"SCALE",	277,
+	"EQPL",	278,
+	"EQMI",	279,
+	"EQMUL",	280,
+	"EQDIV",	281,
+	"EQREM",	282,
+	"EQEXP",	283,
+	"_AUTO",	284,
+	"DOT",	285,
+	"QSTR",	286,
+	"-unknown-",	-1	/* ends search */
+};
+
+#ifdef __cplusplus
+const
+#endif
+char * yyreds[] =
+{
+	"-no such reduction-",
+	"	"start : /* empty */",
+	"start : start stat tail",
+	"start : start def dargs ')' '{' dlist slist '}'",
+	"dlist : tail",
+	"dlist : dlist _AUTO dlets tail",
+	"stat : e",
+	"stat : /* empty */",
+	"stat : QSTR",
+	"stat : LETTER '=' e",
+	"stat : LETTER '[' e ']' '=' e",
+	"stat : LETTER EQOP e",
+	"stat : LETTER '[' e ']' EQOP e",
+	"stat : _BREAK",
+	"stat : _RETURN '(' e ')'",
+	"stat : _RETURN '(' ')'",
+	"stat : _RETURN",
+	"stat : SCALE '=' e",
+	"stat : SCALE EQOP e",
+	"stat : BASE '=' e",
+	"stat : BASE EQOP e",
+	"stat : OBASE '=' e",
+	"stat : OBASE EQOP e",
+	"stat : '{' slist '}'",
+	"stat : FFF",
+	"stat : error",
+	"stat : _IF CRS BLEV '(' re ')' stat",
+	"stat : _WHILE CRS '(' re ')' stat BLEV",
+	"stat : fprefix CRS re ';' e ')' stat BLEV",
+	"stat : '~' LETTER '=' e",
+	"EQOP : EQPL",
+	"EQOP : EQMI",
+	"EQOP : EQMUL",
+	"EQOP : EQDIV",
+	"EQOP : EQREM",
+	"EQOP : EQEXP",
+	"fprefix : _FOR '(' e ';'",
+	"BLEV : /* empty */",
+	"slist : stat",
+	"slist : slist tail stat",
+	"tail : '\n'",
+	"tail : ';'",
+	"re : e EQ e",
+	"re : e '<' e",
+	"re : e '>' e",
+	"re : e NE e",
+	"re : e GE e",
+	"re : e LE e",
+	"re : e",
+	"e : e '+' e",
+	"e : e '-' e",
+	"e : '-' e",
+	"e : e '*' e",
+	"e : e '/' e",
+	"e : e '%' e",
+	"e : e '^' e",
+	"e : LETTER '[' e ']'",
+	"e : LETTER INCR",
+	"e : INCR LETTER",
+	"e : DECR LETTER",
+	"e : LETTER DECR",
+	"e : LETTER '[' e ']' INCR",
+	"e : INCR LETTER '[' e ']'",
+	"e : LETTER '[' e ']' DECR",
+	"e : DECR LETTER '[' e ']'",
+	"e : SCALE INCR",
+	"e : INCR SCALE",
+	"e : SCALE DECR",
+	"e : DECR SCALE",
+	"e : BASE INCR",
+	"e : INCR BASE",
+	"e : BASE DECR",
+	"e : DECR BASE",
+	"e : OBASE INCR",
+	"e : INCR OBASE",
+	"e : OBASE DECR",
+	"e : DECR OBASE",
+	"e : LETTER '(' cargs ')'",
+	"e : LETTER '(' ')'",
+	"e : cons",
+	"e : DOT cons",
+	"e : cons DOT cons",
+	"e : cons DOT",
+	"e : DOT",
+	"e : LETTER",
+	"e : LETTER '=' e",
+	"e : LETTER EQOP e",
+	"e : LETTER '[' e ']' '=' e",
+	"e : LETTER '[' e ']' EQOP e",
+	"e : LENGTH '(' e ')'",
+	"e : SCALE '(' e ')'",
+	"e : '(' e ')'",
+	"e : '?'",
+	"e : SQRT '(' e ')'",
+	"e : '~' LETTER",
+	"e : SCALE '=' e",
+	"e : SCALE EQOP e",
+	"e : BASE '=' e",
+	"e : BASE EQOP e",
+	"e : OBASE '=' e",
+	"e : OBASE EQOP e",
+	"e : SCALE",
+	"e : BASE",
+	"e : OBASE",
+	"cargs : eora",
+	"cargs : cargs ',' eora",
+	"eora : e",
+	"eora : LETTER '[' ']'",
+	"cons : constant",
+	"constant : '_'",
+	"constant : DIGIT",
+	"constant : constant DIGIT",
+	"CRS : /* empty */",
+	"def : _DEFINE LETTER '('",
+	"dargs : /* empty */",
+	"dargs : lora",
+	"dargs : dargs ',' lora",
+	"dlets : lora",
+	"dlets : dlets ',' lora",
+	"lora : LETTER",
+	"lora : LETTER '[' ']'",
+};
+#endif /* YYDEBUG */
+# line	1 "/yaccpar"
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License, Version 1.0 only
+ * (the "License").  You may not use this file except in compliance
+ * with the License.
+ *
+ * You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+ * or http://www.opensolaris.org/os/licensing.
+ * See the License for the specific language governing permissions
+ * and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+/*
+ * Copyright 1993 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
+ */
+
+/* Copyright (c) 1988 AT&T */
+/* All Rights Reserved */
+
+/*	from OpenSolaris "yaccpar	6.18	05/06/08 SMI"	*/
+
+/*
+ * Portions Copyright (c) 2005 Gunnar Ritter, Freiburg i. Br., Germany
+ *
+ * Sccsid @(#)yaccpar	1.5 (gritter) 11/26/05
+ */
+
+/*
+** Skeleton parser driver for yacc output
+*/
+
+/*
+** yacc user known macros and defines
+*/
+#define YYERROR		goto yyerrlab
+#define YYACCEPT	return(0)
+#define YYABORT		return(1)
+#define YYBACKUP( newtoken, newvalue )\
+{\
+	if ( yychar >= 0 || ( yyr2[ yytmp ] >> 1 ) != 1 )\
+	{\
+		yyerror( "syntax error - cannot backup" );\
+		goto yyerrlab;\
+	}\
+	yychar = newtoken;\
+	yystate = *yyps;\
+	yylval = newvalue;\
+	goto yynewstate;\
+}
+#define YYRECOVERING()	(!!yyerrflag)
+#define YYNEW(type)	malloc(sizeof(type) * yynewmax)
+#define YYCOPY(to, from, type) \
+	(type *) memcpy(to, (char *) from, yymaxdepth * sizeof (type))
+#define YYENLARGE( from, type) \
+	(type *) realloc((char *) from, yynewmax * sizeof(type))
+#ifndef YYDEBUG
+#	define YYDEBUG	1	/* make debugging available */
+#endif
+
+/*
+** user known globals
+*/
+int yydebug;			/* set to 1 to get debugging */
+
+/*
+** driver internal defines
+*/
+#define YYFLAG		(-10000000)
+
+/*
+** global variables used by the parser
+*/
+YYSTYPE *yypv;			/* top of value stack */
+int *yyps;			/* top of state stack */
+
+int yystate;			/* current state */
+int yytmp;			/* extra var (lasts between blocks) */
+
+int yynerrs;			/* number of errors */
+int yyerrflag;			/* error recovery flag */
+int yychar;			/* current input token number */
+
+
+
+#ifdef YYNMBCHARS
+#define YYLEX()		yycvtok(yylex())
+/*
+** yycvtok - return a token if i is a wchar_t value that exceeds 255.
+**	If i<255, i itself is the token.  If i>255 but the neither 
+**	of the 30th or 31st bit is on, i is already a token.
+*/
+#if defined(__STDC__) || defined(__cplusplus)
+int yycvtok(int i)
+#else
+int yycvtok(i) int i;
+#endif
+{
+	int first = 0;
+	int last = YYNMBCHARS - 1;
+	int mid;
+	wchar_t j;
+
+	if(i&0x60000000){/*Must convert to a token. */
+		if( yymbchars[last].character < i ){
+			return i;/*Giving up*/
+		}
+		while ((last>=first)&&(first>=0)) {/*Binary search loop*/
+			mid = (first+last)/2;
+			j = yymbchars[mid].character;
+			if( j==i ){/*Found*/ 
+				return yymbchars[mid].tvalue;
+			}else if( j<i ){
+				first = mid + 1;
+			}else{
+				last = mid -1;
+			}
+		}
+		/*No entry in the table.*/
+		return i;/* Giving up.*/
+	}else{/* i is already a token. */
+		return i;
+	}
+}
+#else/*!YYNMBCHARS*/
+#define YYLEX()		yylex()
+#endif/*!YYNMBCHARS*/
+
+/*
+** yyparse - return 0 if worked, 1 if syntax error not recovered from
+*/
+#if defined(__STDC__) || defined(__cplusplus)
+int yyparse(void)
+#else
+int yyparse()
+#endif
+{
+	register YYSTYPE *yypvt = 0;	/* top of value stack for $vars */
+
+#if defined(__cplusplus) || defined(lint) || defined(__GNUC__)
+/*
+	hacks to please C++, lint, and gcc - goto's inside
+	switch should never be executed
+*/
+	static int _yaccpar_lint_hack = -1;
+	switch (_yaccpar_lint_hack)
+	{
+		case 1: goto yyerrlab;
+		case 2: goto yynewstate;
+	}
+#endif
+
+	/*
+	** Initialize externals - yyparse may be called more than once
+	*/
+	yypv = &yyv[-1];
+	yyps = &yys[-1];
+	yystate = 0;
+	yytmp = 0;
+	yynerrs = 0;
+	yyerrflag = 0;
+	yychar = -1;
+
+#if YYMAXDEPTH <= 0
+	if (yymaxdepth <= 0)
+	{
+		if ((yymaxdepth = YYEXPAND(0)) <= 0)
+		{
+			yyerror("yacc initialization error");
+			YYABORT;
+		}
+	}
+#endif
+
+	{
+		register YYSTYPE *yy_pv;	/* top of value stack */
+		register int *yy_ps;		/* top of state stack */
+		register int yy_state;		/* current state */
+		register int  yy_n;		/* internal state number info */
+	goto yystack;	/* moved from 6 lines above to here to please C++ */
+
+		/*
+		** get globals into registers.
+		** branch to here only if YYBACKUP was called.
+		*/
+	yynewstate:
+		yy_pv = yypv;
+		yy_ps = yyps;
+		yy_state = yystate;
+		goto yy_newstate;
+
+		/*
+		** get globals into registers.
+		** either we just started, or we just finished a reduction
+		*/
+	yystack:
+		yy_pv = yypv;
+		yy_ps = yyps;
+		yy_state = yystate;
+
+		/*
+		** top of for (;;) loop while no reductions done
+		*/
+	yy_stack:
+		/*
+		** put a state and value onto the stacks
+		*/
+#if YYDEBUG
+		/*
+		** if debugging, look up token value in list of value vs.
+		** name pairs.  0 and negative (-1) are special values.
+		** Note: linear search is used since time is not a real
+		** consideration while debugging.
+		*/
+		if ( yydebug )
+		{
+			register int yy_i;
+
+			printf( "State %d, token ", yy_state );
+			if ( yychar == 0 )
+				printf( "end-of-file\n" );
+			else if ( yychar < 0 )
+				printf( "-none-\n" );
+			else
+			{
+				for ( yy_i = 0; yytoks[yy_i].t_val >= 0;
+					yy_i++ )
+				{
+					if ( yytoks[yy_i].t_val == yychar )
+						break;
+				}
+				printf( "%s\n", yytoks[yy_i].t_name );
+			}
+		}
+#endif /* YYDEBUG */
+		if ( ++yy_ps >= &yys[ yymaxdepth ] )	/* room on stack? */
+		{
+			/*
+			** reallocate and recover.  Note that pointers
+			** have to be reset, or bad things will happen
+			*/
+			long yyps_index = (yy_ps - yys);
+			long yypv_index = (yy_pv - yyv);
+			long yypvt_index = (yypvt - yyv);
+			int yynewmax;
+#ifdef YYEXPAND
+			yynewmax = YYEXPAND(yymaxdepth);
+#else
+			yynewmax = 2 * yymaxdepth;	/* double table size */
+			if (yymaxdepth == YYMAXDEPTH)	/* first time growth */
+			{
+				char *newyys = (char *)YYNEW(int);
+				char *newyyv = (char *)YYNEW(YYSTYPE);
+				if (newyys != 0 && newyyv != 0)
+				{
+					yys = YYCOPY(newyys, yys, int);
+					yyv = YYCOPY(newyyv, yyv, YYSTYPE);
+				}
+				else
+					yynewmax = 0;	/* failed */
+			}
+			else				/* not first time */
+			{
+				yys = YYENLARGE(yys, int);
+				yyv = YYENLARGE(yyv, YYSTYPE);
+				if (yys == 0 || yyv == 0)
+					yynewmax = 0;	/* failed */
+			}
+#endif
+			if (yynewmax <= yymaxdepth)	/* tables not expanded */
+			{
+				yyerror( "yacc stack overflow" );
+				YYABORT;
+			}
+			yymaxdepth = yynewmax;
+
+			yy_ps = yys + yyps_index;
+			yy_pv = yyv + yypv_index;
+			yypvt = yyv + yypvt_index;
+		}
+		*yy_ps = yy_state;
+		*++yy_pv = yyval;
+
+		/*
+		** we have a new state - find out what to do
+		*/
+	yy_newstate:
+		if ( ( yy_n = yypact[ yy_state ] ) <= YYFLAG )
+			goto yydefault;		/* simple state */
+#if YYDEBUG
+		/*
+		** if debugging, need to mark whether new token grabbed
+		*/
+		yytmp = yychar < 0;
+#endif
+		if ( ( yychar < 0 ) && ( ( yychar = YYLEX() ) < 0 ) )
+			yychar = 0;		/* reached EOF */
+#if YYDEBUG
+		if ( yydebug && yytmp )
+		{
+			register int yy_i;
+
+			printf( "Received token " );
+			if ( yychar == 0 )
+				printf( "end-of-file\n" );
+			else if ( yychar < 0 )
+				printf( "-none-\n" );
+			else
+			{
+				for ( yy_i = 0; yytoks[yy_i].t_val >= 0;
+					yy_i++ )
+				{
+					if ( yytoks[yy_i].t_val == yychar )
+						break;
+				}
+				printf( "%s\n", yytoks[yy_i].t_name );
+			}
+		}
+#endif /* YYDEBUG */
+		if ( ( ( yy_n += yychar ) < 0 ) || ( yy_n >= YYLAST ) )
+			goto yydefault;
+		if ( yychk[ yy_n = yyact[ yy_n ] ] == yychar )	/*valid shift*/
+		{
+			yychar = -1;
+			yyval = yylval;
+			yy_state = yy_n;
+			if ( yyerrflag > 0 )
+				yyerrflag--;
+			goto yy_stack;
+		}
+
+	yydefault:
+		if ( ( yy_n = yydef[ yy_state ] ) == -2 )
+		{
+#if YYDEBUG
+			yytmp = yychar < 0;
+#endif
+			if ( ( yychar < 0 ) && ( ( yychar = YYLEX() ) < 0 ) )
+				yychar = 0;		/* reached EOF */
+#if YYDEBUG
+			if ( yydebug && yytmp )
+			{
+				register int yy_i;
+
+				printf( "Received token " );
+				if ( yychar == 0 )
+					printf( "end-of-file\n" );
+				else if ( yychar < 0 )
+					printf( "-none-\n" );
+				else
+				{
+					for ( yy_i = 0;
+						yytoks[yy_i].t_val >= 0;
+						yy_i++ )
+					{
+						if ( yytoks[yy_i].t_val
+							== yychar )
+						{
+							break;
+						}
+					}
+					printf( "%s\n", yytoks[yy_i].t_name );
+				}
+			}
+#endif /* YYDEBUG */
+			/*
+			** look through exception table
+			*/
+			{
+				register YYCONST int *yyxi = yyexca;
+
+				while ( ( *yyxi != -1 ) ||
+					( yyxi[1] != yy_state ) )
+				{
+					yyxi += 2;
+				}
+				while ( ( *(yyxi += 2) >= 0 ) &&
+					( *yyxi != yychar ) )
+					;
+				if ( ( yy_n = yyxi[1] ) < 0 )
+					YYACCEPT;
+			}
+		}
+
+		/*
+		** check for syntax error
+		*/
+		if ( yy_n == 0 )	/* have an error */
+		{
+			/* no worry about speed here! */
+			switch ( yyerrflag )
+			{
+			case 0:		/* new error */
+				yyerror( "syntax error" );
+				goto skip_init;
+			yyerrlab:
+				/*
+				** get globals into registers.
+				** we have a user generated syntax type error
+				*/
+				yy_pv = yypv;
+				yy_ps = yyps;
+				yy_state = yystate;
+			skip_init:
+				yynerrs++;
+				/* FALLTHRU */
+			case 1:
+			case 2:		/* incompletely recovered error */
+					/* try again... */
+				yyerrflag = 3;
+				/*
+				** find state where "error" is a legal
+				** shift action
+				*/
+				while ( yy_ps >= yys )
+				{
+					yy_n = yypact[ *yy_ps ] + YYERRCODE;
+					if ( yy_n >= 0 && yy_n < YYLAST &&
+						yychk[yyact[yy_n]] == YYERRCODE)					{
+						/*
+						** simulate shift of "error"
+						*/
+						yy_state = yyact[ yy_n ];
+						goto yy_stack;
+					}
+					/*
+					** current state has no shift on
+					** "error", pop stack
+					*/
+#if YYDEBUG
+#	define _POP_ "Error recovery pops state %d, uncovers state %d\n"
+					if ( yydebug )
+						printf( _POP_, *yy_ps,
+							yy_ps[-1] );
+#	undef _POP_
+#endif
+					yy_ps--;
+					yy_pv--;
+				}
+				/*
+				** there is no state on stack with "error" as
+				** a valid shift.  give up.
+				*/
+				YYABORT;
+			case 3:		/* no shift yet; eat a token */
+#if YYDEBUG
+				/*
+				** if debugging, look up token in list of
+				** pairs.  0 and negative shouldn't occur,
+				** but since timing doesn't matter when
+				** debugging, it doesn't hurt to leave the
+				** tests here.
+				*/
+				if ( yydebug )
+				{
+					register int yy_i;
+
+					printf( "Error recovery discards " );
+					if ( yychar == 0 )
+						printf( "token end-of-file\n" );
+					else if ( yychar < 0 )
+						printf( "token -none-\n" );
+					else
+					{
+						for ( yy_i = 0;
+							yytoks[yy_i].t_val >= 0;
+							yy_i++ )
+						{
+							if ( yytoks[yy_i].t_val
+								== yychar )
+							{
+								break;
+							}
+						}
+						printf( "token %s\n",
+							yytoks[yy_i].t_name );
+					}
+				}
+#endif /* YYDEBUG */
+				if ( yychar == 0 )	/* reached EOF. quit */
+					YYABORT;
+				yychar = -1;
+				goto yy_newstate;
+			}
+		}/* end if ( yy_n == 0 ) */
+		/*
+		** reduction by production yy_n
+		** put stack tops, etc. so things right after switch
+		*/
+#if YYDEBUG
+		/*
+		** if debugging, print the string that is the user's
+		** specification of the reduction which is just about
+		** to be done.
+		*/
+		if ( yydebug )
+			printf( "Reduce by (%d) \"%s\"\n",
+				yy_n, yyreds[ yy_n ] );
+#endif
+		yytmp = yy_n;			/* value to switch over */
+		yypvt = yy_pv;			/* $vars top of value stack */
+		/*
+		** Look in goto table for next state
+		** Sorry about using yy_state here as temporary
+		** register variable, but why not, if it works...
+		** If yyr2[ yy_n ] doesn't have the low order bit
+		** set, then there is no action to be done for
+		** this reduction.  So, no saving & unsaving of
+		** registers done.  The only difference between the
+		** code just after the if and the body of the if is
+		** the goto yy_stack in the body.  This way the test
+		** can be made before the choice of what to do is needed.
+		*/
+		{
+			/* length of production doubled with extra bit */
+			register int yy_len = yyr2[ yy_n ];
+
+			if ( !( yy_len & 01 ) )
+			{
+				yy_len >>= 1;
+				yyval = ( yy_pv -= yy_len )[1];	/* $$ = $1 */
+				yy_state = yypgo[ yy_n = yyr1[ yy_n ] ] +
+					*( yy_ps -= yy_len ) + 1;
+				if ( yy_state >= YYLAST ||
+					yychk[ yy_state =
+					yyact[ yy_state ] ] != -yy_n )
+				{
+					yy_state = yyact[ yypgo[ yy_n ] ];
+				}
+				goto yy_stack;
+			}
+			yy_len >>= 1;
+			yyval = ( yy_pv -= yy_len )[1];	/* $$ = $1 */
+			yy_state = yypgo[ yy_n = yyr1[ yy_n ] ] +
+				*( yy_ps -= yy_len ) + 1;
+			if ( yy_state >= YYLAST ||
+				yychk[ yy_state = yyact[ yy_state ] ] != -yy_n )
+			{
+				yy_state = yyact[ yypgo[ yy_n ] ];
+			}
+		}
+					/* save until reenter driver code */
+		yystate = yy_state;
+		yyps = yy_ps;
+		yypv = yy_pv;
+	}
+	/*
+	** code supplied by user is placed in this switch
+	*/
+	switch( yytmp )
+	{
+		
+case 2:
+# line 118 "src/bc/bc.y"
+{ output( (intptr_t *)yypvt[-1] );} break;
+case 3:
+# line 120 "src/bc/bc.y"
+{	bundle( 6,pre, yypvt[-1], post ,"0",numb[lev],"Q");
+			conout( yyval, yypvt[-6] );
+			rcrs = crs;
+			output( (intptr_t *)"" );
+			lev = bindx = 0;
+			} break;
+case 6:
+# line 133 "src/bc/bc.y"
+{ bundle(2, yypvt[-0], "ps." ); } break;
+case 7:
+# line 135 "src/bc/bc.y"
+{ bundle(1, "" ); } break;
+case 8:
+# line 137 "src/bc/bc.y"
+{ bundle(3,"[",yypvt[-0],"]P");} break;
+case 9:
+# line 139 "src/bc/bc.y"
+{ bundle(3, yypvt[-0], "s", yypvt[-2] ); } break;
+case 10:
+# line 141 "src/bc/bc.y"
+{ bundle(4, yypvt[-0], yypvt[-3], ":", geta(yypvt[-5])); } break;
+case 11:
+# line 143 "src/bc/bc.y"
+{ bundle(6, "l", yypvt[-2], yypvt[-0], yypvt[-1], "s", yypvt[-2] ); } break;
+case 12:
+# line 145 "src/bc/bc.y"
+{ bundle(8,yypvt[-3], ";", geta(yypvt[-5]), yypvt[-0], yypvt[-1], yypvt[-3], ":", geta(yypvt[-5]));} break;
+case 13:
+# line 147 "src/bc/bc.y"
+{ bundle(2, numb[lev-bstack[bindx-1]], "Q" ); } break;
+case 14:
+# line 149 "src/bc/bc.y"
+{ bundle(4, yypvt[-1], post, numb[lev], "Q" ); } break;
+case 15:
+# line 151 "src/bc/bc.y"
+{ bundle(4, "0", post, numb[lev], "Q" ); } break;
+case 16:
+# line 153 "src/bc/bc.y"
+{ bundle(4,"0",post,numb[lev],"Q"); } break;
+case 17:
+# line 155 "src/bc/bc.y"
+{ bundle(2, yypvt[-0], "k"); } break;
+case 18:
+# line 157 "src/bc/bc.y"
+{ bundle(4,"K",yypvt[-0],yypvt[-1],"k"); } break;
+case 19:
+# line 159 "src/bc/bc.y"
+{ bundle(2,yypvt[-0], "i"); } break;
+case 20:
+# line 161 "src/bc/bc.y"
+{ bundle(4,"I",yypvt[-0],yypvt[-1],"i"); } break;
+case 21:
+# line 163 "src/bc/bc.y"
+{ bundle(2,yypvt[-0],"o"); } break;
+case 22:
+# line 165 "src/bc/bc.y"
+{ bundle(4,"O",yypvt[-0],yypvt[-1],"o"); } break;
+case 23:
+# line 167 "src/bc/bc.y"
+{ yyval = yypvt[-1]; } break;
+case 24:
+# line 169 "src/bc/bc.y"
+{ bundle(1,"fY"); } break;
+case 25:
+# line 171 "src/bc/bc.y"
+{ bundle(1,"c"); } break;
+case 26:
+# line 173 "src/bc/bc.y"
+{	conout( yypvt[-0], yypvt[-5] );
+			bundle(3, yypvt[-2], yypvt[-5], " " );
+			} break;
+case 27:
+# line 177 "src/bc/bc.y"
+{	bundle(3, yypvt[-1], yypvt[-3], yypvt[-5] );
+			conout( yyval, yypvt[-5] );
+			bundle(3, yypvt[-3], yypvt[-5], " " );
+			} break;
+case 28:
+# line 182 "src/bc/bc.y"
+{	bundle(5, yypvt[-1], yypvt[-3], "s.", yypvt[-5], yypvt[-6] );
+			conout( yyval, yypvt[-6] );
+			bundle(5, yypvt[-7], "s.", yypvt[-5], yypvt[-6], " " );
+			} break;
+case 29:
+# line 187 "src/bc/bc.y"
+{	bundle(3,yypvt[-0],"S",yypvt[-2]); } break;
+case 30:
+# line 191 "src/bc/bc.y"
+{ yyval = (intptr_t)"+"; } break;
+case 31:
+# line 193 "src/bc/bc.y"
+{ yyval = (intptr_t)"-"; } break;
+case 32:
+# line 195 "src/bc/bc.y"
+{ yyval = (intptr_t)"*"; } break;
+case 33:
+# line 197 "src/bc/bc.y"
+{ yyval = (intptr_t)"/"; } break;
+case 34:
+# line 199 "src/bc/bc.y"
+{ yyval = (intptr_t)"%%"; } break;
+case 35:
+# line 201 "src/bc/bc.y"
+{ yyval = (intptr_t)"^"; } break;
+case 36:
+# line 205 "src/bc/bc.y"
+{ yyval = yypvt[-1]; } break;
+case 37:
+# line 209 "src/bc/bc.y"
+{ --bindx; } break;
+case 39:
+# line 214 "src/bc/bc.y"
+{ bundle(2, yypvt[-2], yypvt[-0] ); } break;
+case 40:
+# line 218 "src/bc/bc.y"
+{ln++;} break;
+case 42:
+# line 223 "src/bc/bc.y"
+{ bundle(3, yypvt[-2], yypvt[-0], "=" ); } break;
+case 43:
+# line 225 "src/bc/bc.y"
+{ bundle(3, yypvt[-2], yypvt[-0], ">" ); } break;
+case 44:
+# line 227 "src/bc/bc.y"
+{ bundle(3, yypvt[-2], yypvt[-0], "<" ); } break;
+case 45:
+# line 229 "src/bc/bc.y"
+{ bundle(3, yypvt[-2], yypvt[-0], "!=" ); } break;
+case 46:
+# line 231 "src/bc/bc.y"
+{ bundle(3, yypvt[-2], yypvt[-0], "!>" ); } break;
+case 47:
+# line 233 "src/bc/bc.y"
+{ bundle(3, yypvt[-2], yypvt[-0], "!<" ); } break;
+case 48:
+# line 235 "src/bc/bc.y"
+{ bundle(2, yypvt[-0], " 0!=" ); } break;
+case 49:
+# line 239 "src/bc/bc.y"
+{ bundle(3, yypvt[-2], yypvt[-0], "+" ); } break;
+case 50:
+# line 241 "src/bc/bc.y"
+{ bundle(3, yypvt[-2], yypvt[-0], "-" ); } break;
+case 51:
+# line 243 "src/bc/bc.y"
+{ bundle(3, " 0", yypvt[-0], "-" ); } break;
+case 52:
+# line 245 "src/bc/bc.y"
+{ bundle(3, yypvt[-2], yypvt[-0], "*" ); } break;
+case 53:
+# line 247 "src/bc/bc.y"
+{ bundle(3, yypvt[-2], yypvt[-0], "/" ); } break;
+case 54:
+# line 249 "src/bc/bc.y"
+{ bundle(3, yypvt[-2], yypvt[-0], "%%" ); } break;
+case 55:
+# line 251 "src/bc/bc.y"
+{ bundle(3, yypvt[-2], yypvt[-0], "^" ); } break;
+case 56:
+# line 253 "src/bc/bc.y"
+{ bundle(3,yypvt[-1], ";", geta(yypvt[-3])); } break;
+case 57:
+# line 255 "src/bc/bc.y"
+{ bundle(4, "l", yypvt[-1], "d1+s", yypvt[-1] ); } break;
+case 58:
+# line 257 "src/bc/bc.y"
+{ bundle(4, "l", yypvt[-0], "1+ds", yypvt[-0] ); } break;
+case 59:
+# line 259 "src/bc/bc.y"
+{ bundle(4, "l", yypvt[-0], "1-ds", yypvt[-0] ); } break;
+case 60:
+# line 261 "src/bc/bc.y"
+{ bundle(4, "l", yypvt[-1], "d1-s", yypvt[-1] ); } break;
+case 61:
+# line 263 "src/bc/bc.y"
+{ bundle(7,yypvt[-2],";",geta(yypvt[-4]),"d1+",yypvt[-2],":",geta(yypvt[-4])); } break;
+case 62:
+# line 265 "src/bc/bc.y"
+{ bundle(7,yypvt[-1],";",geta(yypvt[-3]),"1+d",yypvt[-1],":",geta(yypvt[-3])); } break;
+case 63:
+# line 267 "src/bc/bc.y"
+{ bundle(7,yypvt[-2],";",geta(yypvt[-4]),"d1-",yypvt[-2],":",geta(yypvt[-4])); } break;
+case 64:
+# line 269 "src/bc/bc.y"
+{ bundle(7,yypvt[-1],";",geta(yypvt[-3]),"1-d",yypvt[-1],":",geta(yypvt[-3])); } break;
+case 65:
+# line 271 "src/bc/bc.y"
+{ bundle(1,"Kd1+k"); } break;
+case 66:
+# line 273 "src/bc/bc.y"
+{ bundle(1,"K1+dk"); } break;
+case 67:
+# line 275 "src/bc/bc.y"
+{ bundle(1,"Kd1-k"); } break;
+case 68:
+# line 277 "src/bc/bc.y"
+{ bundle(1,"K1-dk"); } break;
+case 69:
+# line 279 "src/bc/bc.y"
+{ bundle(1,"Id1+i"); } break;
+case 70:
+# line 281 "src/bc/bc.y"
+{ bundle(1,"I1+di"); } break;
+case 71:
+# line 283 "src/bc/bc.y"
+{ bundle(1,"Id1-i"); } break;
+case 72:
+# line 285 "src/bc/bc.y"
+{ bundle(1,"I1-di"); } break;
+case 73:
+# line 287 "src/bc/bc.y"
+{ bundle(1,"Od1+o"); } break;
+case 74:
+# line 289 "src/bc/bc.y"
+{ bundle(1,"O1+do"); } break;
+case 75:
+# line 291 "src/bc/bc.y"
+{ bundle(1,"Od1-o"); } break;
+case 76:
+# line 293 "src/bc/bc.y"
+{ bundle(1,"O1-do"); } break;
+case 77:
+# line 295 "src/bc/bc.y"
+{ bundle(4, yypvt[-1], "l", getf(yypvt[-3]), "x" ); } break;
+case 78:
+# line 297 "src/bc/bc.y"
+{ bundle(3, "l", getf(yypvt[-2]), "x" ); } break;
+case 79:
+# line 299 "src/bc/bc.y"
+{ bundle(2, " ", yypvt[-0] ); } break;
+case 80:
+# line 301 "src/bc/bc.y"
+{ bundle(2, " .", yypvt[-0] ); } break;
+case 81:
+# line 303 "src/bc/bc.y"
+{ bundle(4, " ", yypvt[-2], ".", yypvt[-0] ); } break;
+case 82:
+# line 305 "src/bc/bc.y"
+{ bundle(3, " ", yypvt[-1], "." ); } break;
+case 83:
+# line 307 "src/bc/bc.y"
+{ yyval = (intptr_t)"l."; } break;
+case 84:
+# line 309 "src/bc/bc.y"
+{ bundle(2, "l", yypvt[-0] ); } break;
+case 85:
+# line 311 "src/bc/bc.y"
+{ bundle(3, yypvt[-0], "ds", yypvt[-2] ); } break;
+case 86:
+# line 313 "src/bc/bc.y"
+{ bundle(6, "l", yypvt[-2], yypvt[-0], yypvt[-1], "ds", yypvt[-2] ); } break;
+case 87:
+# line 315 "src/bc/bc.y"
+{ bundle(5,yypvt[-0],"d",yypvt[-3],":",geta(yypvt[-5])); } break;
+case 88:
+# line 317 "src/bc/bc.y"
+{ bundle(9,yypvt[-3],";",geta(yypvt[-5]),yypvt[-0],yypvt[-1],"d",yypvt[-3],":",geta(yypvt[-5])); } break;
+case 89:
+# line 319 "src/bc/bc.y"
+{ bundle(2,yypvt[-1],"Z"); } break;
+case 90:
+# line 321 "src/bc/bc.y"
+{ bundle(2,yypvt[-1],"X"); } break;
+case 91:
+# line 323 "src/bc/bc.y"
+{ yyval = yypvt[-1]; } break;
+case 92:
+# line 325 "src/bc/bc.y"
+{ bundle(1, "?" ); } break;
+case 93:
+# line 327 "src/bc/bc.y"
+{ bundle(2, yypvt[-1], "v" ); } break;
+case 94:
+# line 329 "src/bc/bc.y"
+{ bundle(2,"L",yypvt[-0]); } break;
+case 95:
+# line 331 "src/bc/bc.y"
+{ bundle(2,yypvt[-0],"dk"); } break;
+case 96:
+# line 333 "src/bc/bc.y"
+{ bundle(4,"K",yypvt[-0],yypvt[-1],"dk"); } break;
+case 97:
+# line 335 "src/bc/bc.y"
+{ bundle(2,yypvt[-0],"di"); } break;
+case 98:
+# line 337 "src/bc/bc.y"
+{ bundle(4,"I",yypvt[-0],yypvt[-1],"di"); } break;
+case 99:
+# line 339 "src/bc/bc.y"
+{ bundle(2,yypvt[-0],"do"); } break;
+case 100:
+# line 341 "src/bc/bc.y"
+{ bundle(4,"O",yypvt[-0],yypvt[-1],"do"); } break;
+case 101:
+# line 343 "src/bc/bc.y"
+{ bundle(1,"K"); } break;
+case 102:
+# line 345 "src/bc/bc.y"
+{ bundle(1,"I"); } break;
+case 103:
+# line 347 "src/bc/bc.y"
+{ bundle(1,"O"); } break;
+case 105:
+# line 352 "src/bc/bc.y"
+{ bundle(2, yypvt[-2], yypvt[-0] ); } break;
+case 107:
+# line 356 "src/bc/bc.y"
+{bundle(2,"l",geta(yypvt[-2])); } break;
+case 108:
+# line 360 "src/bc/bc.y"
+{ *cp++ = '\0'; } break;
+case 109:
+# line 364 "src/bc/bc.y"
+{ yyval = (intptr_t)cp; *cp++ = '_'; } break;
+case 110:
+# line 366 "src/bc/bc.y"
+{ yyval = (intptr_t)cp; *cp++ = yypvt[-0]; } break;
+case 111:
+# line 368 "src/bc/bc.y"
+{ *cp++ = yypvt[-0]; } break;
+case 112:
+# line 372 "src/bc/bc.y"
+{ yyval = (intptr_t)cp; *cp++ = crs++; *cp++ = '\0';
+			if(crs == '[')crs+=3;
+			if(crs == 'a')crs='{';
+			if(crs >= 0241){yyerror("program too big");
+				getout();
+			}
+			bstack[bindx++] = lev++; } break;
+case 113:
+# line 382 "src/bc/bc.y"
+{	yyval = (intptr_t)getf(yypvt[-1]);
+			pre = (intptr_t *)"";
+			post = (intptr_t *)"";
+			lev = 1;
+			bstack[bindx=0] = 0;
+			} break;
+case 115:
+# line 392 "src/bc/bc.y"
+{ pp( yypvt[-0] ); } break;
+case 116:
+# line 394 "src/bc/bc.y"
+{ pp( yypvt[-0] ); } break;
+case 117:
+# line 398 "src/bc/bc.y"
+{ tp(yypvt[-0]); } break;
+case 118:
+# line 400 "src/bc/bc.y"
+{ tp(yypvt[-0]); } break;
+case 120:
+# line 404 "src/bc/bc.y"
+{ yyval = (intptr_t)geta(yypvt[-2]); } break;
+# line	562 "/yaccpar"
+	}
+	goto yystack;		/* reset registers in driver code */
+}
+

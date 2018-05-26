@@ -90,6 +90,10 @@ BIN=\
 	src/yacc/yacc
 
 CSR=\
+	inc/config.h\
+	inc/heirloom.h\
+	src/awk/ytab.c\
+	src/awk/ytab.h\
 	src/bc/bc.c\
 	src/expr/expr.c\
 	src/grep/egrep.c\
@@ -362,6 +366,7 @@ $(BIN): $(LIB) $(@:=.o)
 $(OBJ): $(HDR) config.mk
 
 # SPECIAL OBJECTS
+src/awk/ytab.h: src/awk/ytab.o
 src/awk/ytab.o:
 	$(YACC) $(YFLAGS) src/awk/awkgram.y
 	mv y.tab.c src/awk/ytab.c
@@ -369,6 +374,7 @@ src/awk/ytab.o:
 	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ -c src/awk/ytab.c
 
 # SPECIAL BINARIES
+src/awk/awk.o: src/awk/ytab.h
 src/awk/awk: $(AWKOBJ)
 	@echo "CC $@ $?"
 	@$(CC) $(LDFLAGS) -o $@ $(AWKOBJ) $(AWKLD)
