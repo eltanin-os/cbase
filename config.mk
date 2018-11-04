@@ -9,7 +9,7 @@ CFLAGS   = -Os -std=c99 -Wall -pedantic
 LDFLAGS  =
 
 PREFIX    = /usr/local
-MANPREFIX = $(TEST)/share/man
+MANPREFIX = $(PREFIX)/share/man
 
 ## HEIRLOOM
 SHELL   = /bin/sh
