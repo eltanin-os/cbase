@@ -11,6 +11,9 @@ LDFLAGS  =
 PREFIX    = /usr/local
 MANPREFIX = $(PREFIX)/share/man
 
+INSTALL=install
+STRIP=strip
+
 ## HEIRLOOM
 SHELL   = /bin/sh
 DFLDIR  = $(PREFIX)/etc/default
@@ -40,9 +43,12 @@ STDS =\
 	-DUCB\
 	-DSUS
 
-CPPFLAGS += -D_GNU_SOURCE $(DEFS) $(STDS)
+GCPPFLAGS = $(CPPFLAGS) $(DEFS) $(STDS)
 AWKLD   = -lm
 #CPIOLD  = -lz -lbz2
 MORELD  = -lcurses
 TABSLD  = -lcurses
 # PATCHLD = -lbsd
+
+BINDIR=/bin
+LIBDIR=/lib

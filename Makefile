@@ -480,7 +480,7 @@ src/lex/parser.c: src/lex/parser.y
 
 .c.o:
 	@echo "CC $@ $<"
-	@$(CC) $(CFLAGS) $(CPPFLAGS) $(GOPTS) -o $@ -c $<
+	@$(CC) $(CFLAGS) $(GCPPFLAGS) $(GOPTS) -o $@ -c $<
 
 # LIB RULES
 $(LIBCOMMON): $(LIBCOMMONOBJ)
@@ -552,15 +552,16 @@ inc/heirloom.h: CHANGES
 
 # USER RULES
 install: all
-	install -dm  755                  $(DESTDIR)/$(PREFIX)/bin
-	install -dm  755                  $(DESTDIR)/$(PREFIX)/lib
-	install -csm 755 $(BIN)           $(DESTDIR)/$(PREFIX)/bin
-	install -cm  644 src/yacc/yaccpar $(DESTDIR)/$(PREFIX)/lib
-	install -cm  644 src/file/magic   $(DESTDIR)/$(PREFIX)/lib
+	$(INSTALL) -dm 755                  $(DESTDIR)/$(PREFIX)/$(BINDIR)
+	$(INSTALL) -dm 755                  $(DESTDIR)/$(PREFIX)/$(LIBDIR)
+	$(STRIP)           $(BIN)
+	$(INSTALL) -cm 755 $(BIN)           $(DESTDIR)/$(PREFIX)/$(BINDIR)
+	$(INSTALL) -cm 644 src/yacc/yaccpar $(DESTDIR)/$(PREFIX)/$(LIBDIR)
+	$(INSTALL) -cm 644 src/file/magic   $(DESTDIR)/$(PREFIX)/$(LIBDIR)
 
 install-man:
-	install -dm 755         $(DESTDIR)/$(MANPREFIX)/man1
-	install -cm 644 $(MAN1) $(DESTDIR)/$(MANPREFIX)/man1
+	$(INSTALL) -dm 755         $(DESTDIR)/$(MANPREFIX)/man1
+	$(INSTALL) -cm 644 $(MAN1) $(DESTDIR)/$(MANPREFIX)/man1
 
 clean:
 	rm -f $(BIN) $(LIB) $(OBJ) y.tab.* $(CSR) yacc.*
