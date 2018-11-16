@@ -374,7 +374,7 @@ src/awk/ytab.o:
 	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ -c src/awk/ytab.c
 
 # SPECIAL BINARIES
-src/awk/awk.o: src/awk/ytab.h
+$(AWKOBJ): src/awk/ytab.h
 src/awk/awk: $(AWKOBJ)
 	@echo "CC $@ $?"
 	@$(CC) $(LDFLAGS) -o $@ $(AWKOBJ) $(AWKLD)
