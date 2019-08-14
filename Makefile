@@ -556,7 +556,7 @@ install: all
 	$(INSTALL) -dm 755                  $(DESTDIR)/$(PREFIX)/$(LIBDIR)
 	$(STRIP)           $(BIN)
 	$(INSTALL) -cm 755 $(BIN)           $(DESTDIR)/$(PREFIX)/$(BINDIR)
-	ln -s $(DESTDIR)/$(PREFIX)/$(BINDIR)/[
+	ln -s test $(DESTDIR)/$(PREFIX)/$(BINDIR)/[
 	$(INSTALL) -cm 644 src/yacc/yaccpar $(DESTDIR)/$(PREFIX)/$(LIBDIR)
 	$(INSTALL) -cm 644 src/file/magic   $(DESTDIR)/$(PREFIX)/$(LIBDIR)
 
